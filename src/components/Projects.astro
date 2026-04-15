@@ -1,0 +1,327 @@
+---
+import { projects } from '../data/cv';
+---
+
+<section id="projects" class="section projects">
+  <header class="section-head">
+    <span class="eyebrow reveal">03 · Projects</span>
+    <h2 class="section-title reveal" data-delay="1">
+      Cose che ho <span class="gradient-text">creato</span>.
+    </h2>
+    <p class="section-sub reveal mono" data-delay="2">
+      ↓ scroll — la luce segue il tuo viaggio
+    </p>
+  </header>
+
+  <div class="proj-wrap">
+    <svg class="proj-path" id="projPath" viewBox="0 0 740 1400" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="pcl1" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#b169db"/>
+          <stop offset="33%" stop-color="#f7d152"/>
+          <stop offset="66%" stop-color="#46cf71"/>
+          <stop offset="100%" stop-color="#0fbffa"/>
+        </linearGradient>
+      </defs>
+      <path id="proj-p1"
+        d="M 106 40 h 375 c 114 0 226 128 226 235 v 220 c 0 136 -122 222 -224 221 l -182 -2 c -89 1 -141 42 -142 158 l -2 204 c -1 117 37 173 134 173 h 186 c 80 0 200 95 200 200"
+        fill="none" stroke="url(#pcl1)" stroke-width="7" stroke-linecap="round"
+        stroke-dasharray="14 18 80 26 14 26 160 26 14 26 80 26 14 20000"
+      />
+      <path id="proj-p2"
+        d="M 33 80 h 444 c 96 0 190 107 190 201 v 224 c 0 116 -98 188 -190 187 l -192 -2 c -92 0 -166 75 -166 168 v 278 c 0 94 74 169 166 169 h 194"
+        fill="none" stroke="url(#pcl1)" stroke-width="5" stroke-linecap="round"
+        stroke-dasharray="24 40 100 40 24 40 220 40 24 20000"
+        opacity="0.6"
+      />
+    </svg>
+
+    <div class="proj-cards">
+      {projects.map((p, i) => (
+        <article class="proj-card reveal" data-delay={(i + 1).toString()} data-cursor="hover">
+          <div class="card-inner">
+            <div class="card-top">
+              <span class="kind mono">{p.kind}</span>
+              <div class={`icon icon-${p.icon}`} aria-hidden="true">
+                {p.icon === 'health' && (
+                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M24 42s-14-8-14-20a8 8 0 0 1 14-5 8 8 0 0 1 14 5c0 12-14 20-14 20z" />
+                    <path d="M17 24h4l2-4 3 8 2-4h5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                )}
+                {p.icon === 'figma' && (
+                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M24 6h8a6 6 0 1 1 0 12h-8Z"/>
+                    <path d="M16 6h8v12h-8a6 6 0 1 1 0-12Z"/>
+                    <path d="M16 18h8v12h-8a6 6 0 1 1 0-12Z"/>
+                    <path d="M24 18h8a6 6 0 1 1-8 6"/>
+                    <circle cx="30" cy="36" r="6"/>
+                  </svg>
+                )}
+                {p.icon === 'code' && (
+                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <path d="M18 14 8 24l10 10"/>
+                    <path d="M30 14l10 10-10 10"/>
+                    <path d="M27 10l-6 28"/>
+                  </svg>
+                )}
+                {p.icon === 'spark' && (
+                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <path d="M24 6v12M24 30v12M6 24h12M30 24h12M12 12l8 8M28 28l8 8M36 12l-8 8M12 36l8-8"/>
+                  </svg>
+                )}
+              </div>
+            </div>
+
+            <h3 class="proj-name">{p.name}</h3>
+            {p.period && <p class="proj-period mono">{p.period}</p>}
+            <p class="proj-desc">{p.description}</p>
+
+            <div class="proj-stack">
+              {p.stack.map((s) => <span class="chip">{s}</span>)}
+            </div>
+
+            {p.link && (
+              <a class="proj-link" href={p.link.url} target="_blank" rel="noopener">
+                <span>{p.link.label}</span>
+                <span class="arrow">↗</span>
+              </a>
+            )}
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .projects { padding-top: 80px; }
+
+  .section-sub {
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    color: var(--faint);
+    text-transform: uppercase;
+  }
+
+  .proj-wrap {
+    position: relative;
+  }
+
+  .proj-path {
+    position: absolute;
+    inset: -40px 0 -40px 0;
+    width: 100%;
+    height: calc(100% + 80px);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.85;
+    filter: drop-shadow(0 0 12px rgba(177, 105, 219, 0.35));
+  }
+
+  .proj-cards {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .proj-card {
+    position: relative;
+    align-self: center;
+    width: 100%;
+    max-width: 560px;
+    border-radius: 24px;
+    padding: 1px;
+    background: linear-gradient(135deg,
+      rgba(177, 105, 219, 0.5),
+      rgba(247, 209, 82, 0.25),
+      rgba(70, 207, 113, 0.25),
+      rgba(15, 191, 250, 0.5));
+    transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
+  }
+
+  .proj-card:nth-child(odd) { align-self: flex-start; }
+  .proj-card:nth-child(even) { align-self: flex-end; }
+
+  .proj-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  .card-inner {
+    position: relative;
+    padding: 34px 34px 30px;
+    border-radius: 23px;
+    background:
+      radial-gradient(closest-corner, rgba(255,255,255,0.04) 0%, rgba(12, 12, 18, 0.9) 90%),
+      linear-gradient(135deg, rgba(15, 15, 22, 0.85), rgba(8, 8, 12, 0.95));
+    backdrop-filter: blur(22px);
+    overflow: hidden;
+  }
+
+  .card-inner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background:
+      radial-gradient(closest-side, rgba(177, 105, 219, 0.18), transparent 60%);
+    opacity: 0;
+    transform: translate(var(--mx, 0), var(--my, 0));
+    transition: opacity 0.5s;
+    pointer-events: none;
+  }
+
+  .proj-card:hover .card-inner::before { opacity: 1; }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .kind {
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    color: var(--faint);
+    text-transform: uppercase;
+    padding-top: 6px;
+  }
+
+  .icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border: 1px solid var(--line);
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .icon-health { color: #ff7aa8; }
+  .icon-figma { color: #f7d152; }
+  .icon-code { color: #46cf71; }
+  .icon-spark { color: #0fbffa; }
+
+  .proj-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+
+  .proj-period {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--faint);
+    margin-bottom: 14px;
+  }
+
+  .proj-desc {
+    font-size: 0.96rem;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.78);
+    margin-top: 10px;
+    margin-bottom: 22px;
+  }
+
+  .proj-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 24px;
+  }
+
+  .proj-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.04);
+    transition: all 0.35s var(--ease);
+  }
+
+  .proj-link:hover {
+    background: #fff;
+    color: #0b0b12;
+    border-color: transparent;
+    transform: translateY(-2px);
+  }
+
+  .proj-link .arrow {
+    transition: transform 0.3s var(--ease);
+  }
+
+  .proj-link:hover .arrow {
+    transform: translate(4px, -4px);
+  }
+
+  @media (max-width: 760px) {
+    .proj-card,
+    .proj-card:nth-child(odd),
+    .proj-card:nth-child(even) {
+      align-self: stretch;
+    }
+
+    .proj-cards { gap: 40px; }
+    .card-inner { padding: 26px 22px; }
+    .proj-name { font-size: 1.55rem; }
+    .proj-path { display: none; }
+  }
+</style>
+
+<script>
+  // scroll-driven dash offset — inspired by UI2
+  const paths = document.querySelectorAll<SVGPathElement>('#projPath path');
+  const host = document.querySelector('.projects');
+
+  if (paths.length && host) {
+    const onScroll = () => {
+      const rect = host.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = rect.height + vh;
+      const prog = Math.min(Math.max((vh - rect.top) / total, 0), 1);
+      paths.forEach((p, i) => {
+        const speed = i === 0 ? 2800 : 1800;
+        p.style.strokeDashoffset = String(-prog * speed);
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    onScroll();
+  }
+
+  // card glow follows mouse
+  document.querySelectorAll<HTMLElement>('.proj-card').forEach((card) => {
+    card.addEventListener('pointermove', (e) => {
+      const r = card.getBoundingClientRect();
+      const x = ((e.clientX - r.left) - r.width / 2);
+      const y = ((e.clientY - r.top) - r.height / 2);
+      card.style.setProperty('--mx', `${x * 0.3}px`);
+      card.style.setProperty('--my', `${y * 0.3}px`);
+    });
+  });
+</script>

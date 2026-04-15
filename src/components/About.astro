@@ -1,0 +1,218 @@
+---
+import { profile, languages, education } from '../data/cv';
+
+const stats = [
+  { n: '5+', label: 'Anni di esperienza UI/UX & Dev' },
+  { n: '15+', label: 'Tecnologie in stack' },
+  { n: '3', label: 'Lingue parlate' },
+  { n: '∞', label: 'Curiosità' },
+];
+---
+
+<section id="about" class="section about">
+  <header class="section-head">
+    <span class="eyebrow reveal">01 · About</span>
+    <h2 class="section-title reveal" data-delay="1">
+      Sviluppatore per <span class="gradient-text">passione</span>,
+      <br />problem-solver per natura.
+    </h2>
+  </header>
+
+  <div class="about-grid">
+    <div class="about-text reveal" data-delay="2">
+      {profile.bio.split('\n').map((p) => <p>{p}</p>)}
+
+      <div class="meta">
+        <div class="meta-row">
+          <span class="mono key">NATO IL</span>
+          <span class="val">{profile.birth}</span>
+        </div>
+        <div class="meta-row">
+          <span class="mono key">LUOGO</span>
+          <span class="val">{profile.location}</span>
+        </div>
+        <div class="meta-row">
+          <span class="mono key">LINGUE</span>
+          <span class="val">
+            {languages.map((l, i) => (
+              <><b>{l.name}</b> <i>{l.level}</i>{i < languages.length - 1 ? ' · ' : ''}</>
+            ))}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="about-side reveal" data-delay="3">
+      <div class="stats">
+        {stats.map((s) => (
+          <div class="stat">
+            <div class="stat-n">{s.n}</div>
+            <div class="stat-l">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div class="edu">
+        <h3 class="edu-title mono">FORMAZIONE</h3>
+        {education.map((e) => (
+          <div class="edu-item">
+            <div class="edu-period mono">{e.period}</div>
+            <div class="edu-body">
+              <div class="edu-name">{e.title}</div>
+              <div class="edu-place">{e.place} · <span>{e.location}</span></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </aside>
+  </div>
+</section>
+
+<style>
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  .about-text p {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: rgba(255, 255, 255, 0.82);
+    margin-bottom: 14px;
+    max-width: 56ch;
+  }
+
+  .meta {
+    margin-top: 28px;
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .meta-row {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 16px;
+    align-items: baseline;
+  }
+
+  .key {
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    color: var(--faint);
+  }
+
+  .val {
+    font-size: 0.92rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .val b { font-weight: 600; }
+  .val i { color: var(--faint); font-style: normal; font-size: 0.82rem; }
+
+  .about-side {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    position: sticky;
+    top: 110px;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .stat {
+    background: rgba(15, 15, 22, 0.6);
+    backdrop-filter: blur(10px);
+    padding: 28px 22px;
+    transition: background 0.35s var(--ease);
+  }
+
+  .stat:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .stat-n {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.6rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+
+  .stat-l {
+    margin-top: 10px;
+    font-size: 0.76rem;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+  }
+
+  .edu {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .edu-title {
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    color: var(--faint);
+    margin-bottom: 6px;
+  }
+
+  .edu-item {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 14px;
+    padding-bottom: 18px;
+    border-bottom: 1px dashed var(--line);
+  }
+
+  .edu-item:last-child { border: none; padding-bottom: 0; }
+
+  .edu-period {
+    font-size: 0.72rem;
+    color: var(--faint);
+    padding-top: 3px;
+  }
+
+  .edu-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.35;
+  }
+
+  .edu-place {
+    margin-top: 3px;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .edu-place span { opacity: 0.7; }
+
+  @media (max-width: 860px) {
+    .about-grid { grid-template-columns: 1fr; gap: 40px; }
+    .about-side { position: static; }
+  }
+
+  @media (max-width: 480px) {
+    .stats { grid-template-columns: 1fr 1fr; }
+    .edu-item { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>

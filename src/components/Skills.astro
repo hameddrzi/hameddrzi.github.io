@@ -1,0 +1,163 @@
+---
+import { skills, certifications } from '../data/cv';
+---
+
+<section id="skills" class="section skills">
+  <header class="section-head">
+    <span class="eyebrow reveal">04 · Skills & Certs</span>
+    <h2 class="section-title reveal" data-delay="1">
+      Strumenti che uso per <span class="gradient-text">costruire</span>.
+    </h2>
+  </header>
+
+  <div class="skills-grid">
+    {Object.entries(skills).map(([cat, items], i) => (
+      <div class="skill-card reveal" data-delay={(i + 1).toString()}>
+        <h3 class="skill-cat mono">{cat}</h3>
+        <div class="skill-items">
+          {items.map((it) => (
+            <span class="skill-pill">{it}</span>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div class="certs reveal" data-delay="3">
+    <h3 class="certs-title mono">CERTIFICAZIONI</h3>
+    <ul class="certs-list">
+      {certifications.map((c) => (
+        <li>
+          <span class="cert-issuer">{c.issuer}</span>
+          <span class="cert-dot">·</span>
+          <span class="cert-name">{c.name}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+    margin-bottom: 48px;
+  }
+
+  .skill-card {
+    position: relative;
+    padding: 24px 22px;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    overflow: hidden;
+    transition: border-color 0.45s var(--ease), transform 0.45s var(--ease);
+  }
+
+  .skill-card::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--grad);
+    transform: scaleX(0.1);
+    transform-origin: left;
+    transition: transform 0.7s var(--ease);
+  }
+
+  .skill-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+  }
+
+  .skill-card:hover::after {
+    transform: scaleX(1);
+  }
+
+  .skill-cat {
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    color: var(--faint);
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+
+  .skill-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .skill-pill {
+    display: inline-block;
+    padding: 7px 13px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line);
+    color: rgba(255, 255, 255, 0.85);
+    transition: all 0.3s var(--ease);
+  }
+
+  .skill-pill:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+  }
+
+  .certs {
+    padding: 28px 28px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .certs-title {
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    color: var(--faint);
+    margin-bottom: 18px;
+  }
+
+  .certs-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .certs-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.88);
+    border-bottom: 1px dashed var(--line);
+  }
+
+  .certs-list li:last-child { border: none; }
+
+  .cert-issuer {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.78rem;
+    color: var(--faint);
+    min-width: 140px;
+    letter-spacing: 0.02em;
+  }
+
+  .cert-dot { color: var(--grad-3); }
+
+  .cert-name {
+    font-weight: 500;
+  }
+
+  @media (max-width: 520px) {
+    .certs-list li { flex-wrap: wrap; }
+    .cert-issuer { min-width: 0; }
+  }
+</style>

@@ -1,0 +1,452 @@
+---
+import { profile } from '../data/cv';
+---
+
+<section id="top" class="hero">
+  <canvas id="heroCanvas" aria-hidden="true"></canvas>
+
+  <div class="hero-ui">
+    <p class="eyebrow reveal">
+      <span class="live"></span> DISPONIBILE · {profile.location}
+    </p>
+
+    <h1 class="hero-title reveal" data-delay="1">
+      <span class="line">Ciao, sono</span>
+      <span class="line name">
+        <span class="gradient-text">{profile.firstName}</span>
+        <span class="last">{profile.lastName}.</span>
+      </span>
+      <span class="line role">{profile.role} <span class="cursor-i">|</span></span>
+    </h1>
+
+    <p class="hero-tag reveal" data-delay="2">{profile.tagline}</p>
+
+    <div class="hero-cta reveal" data-delay="3">
+      <a href="#projects" class="btn btn-primary">
+        Vedi i miei lavori <span class="arrow">→</span>
+      </a>
+      <a href="#contact" class="btn btn-ghost">Contattami</a>
+    </div>
+
+    <div class="hero-hint reveal" data-delay="4">
+      <span class="mono">MUOVI IL MOUSE</span>
+      <span class="dotsep">·</span>
+      <span class="mono">CLICK PER ESPLODERE</span>
+      <span class="dotsep">·</span>
+      <span class="mono">SCROLL ↓</span>
+    </div>
+  </div>
+
+  <div class="scroll-ind" aria-hidden="true">
+    <span class="scroll-line"></span>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 120px 28px 80px;
+  }
+
+  #heroCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .hero-ui {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .hero-ui .btn, .hero-ui a { pointer-events: auto; }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .live {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #46cf71;
+    box-shadow: 0 0 0 4px rgba(70, 207, 113, 0.2), 0 0 16px #46cf71;
+    animation: live 2s ease-in-out infinite;
+  }
+
+  @keyframes live {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.55; transform: scale(0.85); }
+  }
+
+  .hero-title {
+    margin-top: 22px;
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.035em;
+    font-size: clamp(2.4rem, 9vw, 6.8rem);
+  }
+
+  .hero-title .line {
+    display: block;
+  }
+
+  .hero-title .line:first-child {
+    font-size: 0.28em;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 14px;
+  }
+
+  .name {
+    display: block;
+    line-height: 0.95;
+  }
+
+  .name .last {
+    display: block;
+    margin-top: 6px;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .role {
+    margin-top: 18px;
+    font-size: 0.24em;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    text-transform: none;
+  }
+
+  .cursor-i {
+    display: inline-block;
+    width: 2px;
+    background: var(--grad-4);
+    color: transparent;
+    margin-left: 2px;
+    animation: blink 1s steps(1) infinite;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  .hero-tag {
+    margin-top: 32px;
+    font-size: clamp(0.95rem, 1.6vw, 1.1rem);
+    color: var(--muted);
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 36px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    letter-spacing: 0.01em;
+    transition: transform 0.3s var(--ease-pop), background 0.3s, border-color 0.3s, box-shadow 0.3s;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    background: #fff;
+    color: #0b0b12;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 40px rgba(255, 255, 255, 0.2);
+  }
+
+  .btn-primary .arrow {
+    transition: transform 0.3s var(--ease);
+  }
+
+  .btn-primary:hover .arrow {
+    transform: translateX(6px);
+  }
+
+  .btn-ghost {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--line);
+    color: #fff;
+    backdrop-filter: blur(10px);
+  }
+
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+  }
+
+  .hero-hint {
+    margin-top: 48px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    font-size: 0.64rem;
+    letter-spacing: 0.22em;
+    color: var(--faint);
+    text-transform: uppercase;
+  }
+
+  .dotsep {
+    opacity: 0.4;
+  }
+
+  .scroll-ind {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 40px;
+    overflow: hidden;
+    z-index: 2;
+  }
+
+  .scroll-line {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    animation: scrollAnim 2.2s ease-in-out infinite;
+  }
+
+  @keyframes scrollAnim {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+
+  @media (max-width: 600px) {
+    .hero-hint { flex-wrap: wrap; padding: 0 20px; }
+    .hero-cta { width: 100%; }
+  }
+</style>
+
+<script>
+  // ================== Hero particle text ==================
+  const cvs = document.getElementById('heroCanvas') as HTMLCanvasElement | null;
+  if (cvs) {
+    const ctx = cvs.getContext('2d', { willReadFrequently: true })!;
+    let W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let fontsReady = false;
+
+    const TEXT = 'HAMED';
+    const GAP = 4;
+    const mouse = { x: -9999, y: -9999, active: false, clicked: 0 };
+
+    type P = {
+      x: number; y: number;
+      ox: number; oy: number;
+      vx: number; vy: number;
+      size: number; base: number;
+      r: number; g: number; b: number;
+      op: number;
+    };
+
+    let particles: P[] = [];
+
+    function resize() {
+      const rect = cvs!.getBoundingClientRect();
+      W = rect.width;
+      H = rect.height;
+      cvs!.width = Math.floor(W * dpr);
+      cvs!.height = Math.floor(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildParticles();
+    }
+
+    function buildParticles() {
+      particles = [];
+      const off = document.createElement('canvas');
+      const octx = off.getContext('2d', { willReadFrequently: true })!;
+      const target = Math.min(W * 0.9, 1100);
+      let fs = Math.floor(target / 3.2);
+      fs = Math.max(120, Math.min(fs, 520));
+      off.width = W;
+      off.height = H;
+
+      octx.fillStyle = '#fff';
+      octx.textAlign = 'center';
+      octx.textBaseline = 'middle';
+      octx.font = `800 ${fs}px "Space Grotesk", "Inter", sans-serif`;
+      octx.fillText(TEXT, W / 2, H / 2);
+
+      const img = octx.getImageData(0, 0, W, H).data;
+
+      const gradStops: [number, number, number][] = [
+        [177, 105, 219],
+        [247, 209, 82],
+        [70, 207, 113],
+        [15, 191, 250],
+      ];
+
+      const sampleGap = W < 600 ? GAP + 2 : GAP;
+
+      for (let y = 0; y < H; y += sampleGap) {
+        for (let x = 0; x < W; x += sampleGap) {
+          const i = (y * W + x) * 4;
+          const a = img[i + 3];
+          if (a < 128) continue;
+
+          const t = x / W;
+          const seg = t * (gradStops.length - 1);
+          const si = Math.floor(seg);
+          const f = seg - si;
+          const c1 = gradStops[si];
+          const c2 = gradStops[Math.min(si + 1, gradStops.length - 1)];
+          const r = c1[0] + (c2[0] - c1[0]) * f;
+          const g = c1[1] + (c2[1] - c1[1]) * f;
+          const b = c1[2] + (c2[2] - c1[2]) * f;
+
+          const edge = Math.random();
+          let sx: number, sy: number;
+          if (edge < 0.25) { sx = Math.random() * W; sy = -30; }
+          else if (edge < 0.5) { sx = Math.random() * W; sy = H + 30; }
+          else if (edge < 0.75) { sx = -30; sy = Math.random() * H; }
+          else { sx = W + 30; sy = Math.random() * H; }
+
+          particles.push({
+            x: sx, y: sy,
+            ox: x, oy: y,
+            vx: 0, vy: 0,
+            size: sampleGap * 0.8,
+            base: sampleGap * 0.8,
+            r, g, b,
+            op: 0,
+          });
+        }
+      }
+    }
+
+    function render() {
+      ctx.fillStyle = 'rgba(8, 8, 12, 0.28)';
+      ctx.fillRect(0, 0, W, H);
+
+      const mx = mouse.x, my = mouse.y;
+      const active = mouse.active;
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.op += (1 - p.op) * 0.04;
+
+        const dx = p.ox - p.x;
+        const dy = p.oy - p.y;
+        p.vx += dx * 0.012;
+        p.vy += dy * 0.012;
+
+        if (active) {
+          const mdx = p.x - mx;
+          const mdy = p.y - my;
+          const distSq = mdx * mdx + mdy * mdy;
+          const radius = mouse.clicked > 0 ? 220 : 120;
+          const r2 = radius * radius;
+          if (distSq < r2 && distSq > 0) {
+            const d = Math.sqrt(distSq);
+            const force = (radius - d) / radius;
+            const power = mouse.clicked > 0 ? force * force * 14 : force * force * 4;
+            p.vx += (mdx / d) * power;
+            p.vy += (mdy / d) * power;
+            p.size = p.base * (1 + force * 0.9);
+          } else {
+            p.size += (p.base - p.size) * 0.1;
+          }
+        } else {
+          p.size += (p.base - p.size) * 0.1;
+        }
+
+        p.vx *= 0.92;
+        p.vy *= 0.92;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        const s = Math.max(1, p.size);
+        ctx.globalAlpha = p.op;
+        ctx.fillStyle = `rgb(${p.r | 0},${p.g | 0},${p.b | 0})`;
+        ctx.fillRect(p.x - s / 2, p.y - s / 2, s, s);
+      }
+      ctx.globalAlpha = 1;
+
+      if (mouse.clicked > 0) mouse.clicked--;
+
+      requestAnimationFrame(render);
+    }
+
+    const rectFor = () => cvs.getBoundingClientRect();
+
+    window.addEventListener('pointermove', (e) => {
+      const r = rectFor();
+      if (e.clientY < r.top || e.clientY > r.bottom) {
+        mouse.active = false;
+        return;
+      }
+      mouse.active = true;
+      mouse.x = e.clientX - r.left;
+      mouse.y = e.clientY - r.top;
+    }, { passive: true });
+
+    window.addEventListener('pointerdown', (e) => {
+      const r = rectFor();
+      if (e.clientY >= r.top && e.clientY <= r.bottom) {
+        mouse.clicked = 40;
+      }
+    });
+
+    window.addEventListener('pointerleave', () => { mouse.active = false; });
+
+    cvs.addEventListener('touchmove', (e) => {
+      const t = e.touches[0];
+      const r = rectFor();
+      mouse.active = true;
+      mouse.x = t.clientX - r.left;
+      mouse.y = t.clientY - r.top;
+    }, { passive: true });
+
+    cvs.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      const r = rectFor();
+      mouse.active = true;
+      mouse.clicked = 40;
+      mouse.x = t.clientX - r.left;
+      mouse.y = t.clientY - r.top;
+    }, { passive: true });
+
+    cvs.addEventListener('touchend', () => { mouse.active = false; });
+
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(cvs);
+    resize();
+    render();
+  }
+</script>

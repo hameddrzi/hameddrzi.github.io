@@ -1,0 +1,209 @@
+---
+import { profile } from '../data/cv';
+---
+
+<section id="contact" class="section contact">
+  <div class="contact-inner">
+    <span class="eyebrow reveal">05 · Contact</span>
+
+    <h2 class="contact-title reveal" data-delay="1">
+      <span>Parliamo di</span>
+      <span class="gradient-text shimmer">qualcosa di grande</span>
+      <span>insieme.</span>
+    </h2>
+
+    <a class="mail-cta reveal" data-delay="2" href={`mailto:${profile.email}`}>
+      <span class="mail-label mono">SCRIVIMI</span>
+      <span class="mail-addr">{profile.email}</span>
+      <span class="mail-arrow">→</span>
+    </a>
+
+    <div class="contact-links reveal" data-delay="3">
+      <a href={profile.github} target="_blank" rel="noopener" class="c-link">
+        <span class="c-k mono">GITHUB</span>
+        <span class="c-v">hameddrzi</span>
+      </a>
+      <a href={profile.linkedin} target="_blank" rel="noopener" class="c-link">
+        <span class="c-k mono">LINKEDIN</span>
+        <span class="c-v">hamed-darzi</span>
+      </a>
+      <a href={profile.cvPdf} target="_blank" class="c-link">
+        <span class="c-k mono">CV</span>
+        <span class="c-v">Scarica PDF</span>
+      </a>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <span>© {new Date().getFullYear()} {profile.name}</span>
+    <span class="foot-sep">·</span>
+    <span>Costruito con <a href="https://astro.build" target="_blank" rel="noopener" class="link-u">Astro</a></span>
+    <span class="foot-sep">·</span>
+    <span>{profile.location}</span>
+  </footer>
+</section>
+
+<style>
+  .contact {
+    padding-top: 160px;
+    padding-bottom: 80px;
+    position: relative;
+  }
+
+  .contact::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 900px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--line), transparent);
+  }
+
+  .contact-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .contact-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    font-size: clamp(2.4rem, 7vw, 5.2rem);
+    margin: 18px 0 60px;
+    max-width: 900px;
+  }
+
+  .contact-title span { display: block; }
+
+  .shimmer {
+    background-size: 200% auto;
+    animation: shimmer 6s linear infinite;
+  }
+
+  @keyframes shimmer {
+    to { background-position: 200% center; }
+  }
+
+  .mail-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px 34px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.02);
+    transition: all 0.5s var(--ease);
+    margin-bottom: 72px;
+    font-weight: 600;
+    overflow: hidden;
+    position: relative;
+    max-width: 100%;
+  }
+
+  .mail-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--grad);
+    opacity: 0;
+    transition: opacity 0.5s;
+    z-index: 0;
+    border-radius: inherit;
+  }
+
+  .mail-cta > * {
+    position: relative;
+    z-index: 1;
+    transition: color 0.5s;
+  }
+
+  .mail-cta:hover {
+    border-color: transparent;
+    transform: translateY(-3px);
+    box-shadow: 0 30px 80px rgba(177, 105, 219, 0.35);
+  }
+
+  .mail-cta:hover::before { opacity: 1; }
+  .mail-cta:hover > * { color: #0b0b12; }
+
+  .mail-label {
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    opacity: 0.5;
+    text-transform: uppercase;
+  }
+
+  .mail-addr {
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    letter-spacing: -0.01em;
+    word-break: break-all;
+  }
+
+  .mail-arrow {
+    transition: transform 0.4s var(--ease);
+    font-size: 1.2rem;
+  }
+
+  .mail-cta:hover .mail-arrow {
+    transform: translateX(6px);
+  }
+
+  .contact-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .c-link {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 22px 24px;
+    background: rgba(15, 15, 22, 0.6);
+    transition: background 0.35s var(--ease);
+  }
+
+  .c-link:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .c-k {
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    color: var(--faint);
+    text-transform: uppercase;
+  }
+
+  .c-v {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .foot {
+    max-width: 1000px;
+    margin: 120px auto 0;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.78rem;
+    color: var(--faint);
+    justify-content: center;
+  }
+
+  .foot-sep { opacity: 0.5; }
+
+  @media (max-width: 520px) {
+    .mail-cta { flex-wrap: wrap; gap: 10px; padding: 18px 22px; }
+    .mail-label { width: 100%; }
+  }
+</style>

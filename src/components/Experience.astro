@@ -1,0 +1,217 @@
+---
+import { experiences } from '../data/cv';
+---
+
+<section id="experience" class="section experience">
+  <header class="section-head">
+    <span class="eyebrow reveal">02 · Experience</span>
+    <h2 class="section-title reveal" data-delay="1">
+      Dove ho <span class="gradient-text">costruito</span>.
+    </h2>
+  </header>
+
+  <div class="timeline">
+    <div class="timeline-line" aria-hidden="true"></div>
+
+    {experiences.map((exp, i) => (
+      <article class="exp reveal" data-delay={(i + 1).toString()}>
+        <div class="exp-dot" aria-hidden="true"></div>
+
+        <div class="exp-head">
+          <div class="exp-when mono">
+            <span>{exp.from}</span>
+            <span class="sep">→</span>
+            <span>{exp.to}</span>
+          </div>
+        </div>
+
+        <div class="exp-card" data-cursor="hover">
+          <div class="exp-title-row">
+            <h3 class="exp-role">{exp.role}</h3>
+            <span class="exp-loc mono">{exp.location}</span>
+          </div>
+          <div class="exp-company">
+            <span class="co-name">{exp.company}</span>
+          </div>
+
+          <ul class="exp-bullets">
+            {exp.bullets.map((b) => <li>{b}</li>)}
+          </ul>
+
+          <div class="exp-stack">
+            {exp.stack.map((s) => <span class="chip">{s}</span>)}
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .experience { overflow: hidden; }
+
+  .timeline {
+    position: relative;
+    padding-left: 28px;
+  }
+
+  .timeline-line {
+    position: absolute;
+    left: 11px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      var(--grad-1) 10%,
+      var(--grad-2) 40%,
+      var(--grad-3) 65%,
+      var(--grad-4) 90%,
+      transparent 100%);
+    opacity: 0.55;
+    border-radius: 2px;
+  }
+
+  .exp {
+    position: relative;
+    padding-bottom: 64px;
+  }
+
+  .exp:last-child { padding-bottom: 0; }
+
+  .exp-dot {
+    position: absolute;
+    left: -24px;
+    top: 6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--grad-1);
+    box-shadow:
+      0 0 0 5px rgba(177, 105, 219, 0.12),
+      0 0 24px rgba(177, 105, 219, 0.6);
+  }
+
+  .exp-head {
+    margin-bottom: 12px;
+  }
+
+  .exp-when {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--faint);
+  }
+
+  .exp-when .sep { color: var(--grad-3); }
+
+  .exp-card {
+    position: relative;
+    padding: 28px 30px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    backdrop-filter: blur(12px);
+    transition: border-color 0.45s var(--ease), transform 0.45s var(--ease), box-shadow 0.45s var(--ease);
+    overflow: hidden;
+  }
+
+  .exp-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--grad);
+    opacity: 0;
+    border-radius: inherit;
+    transition: opacity 0.5s var(--ease);
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+
+  .exp-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  }
+
+  .exp-card:hover::before { opacity: 0.05; }
+
+  .exp-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .exp-role {
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+
+  .exp-loc {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--faint);
+    padding-top: 8px;
+  }
+
+  .exp-company {
+    margin-top: 4px;
+  }
+
+  .co-name {
+    font-size: 0.96rem;
+    font-weight: 500;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .exp-bullets {
+    list-style: none;
+    margin: 20px 0 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .exp-bullets li {
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.78);
+    padding-left: 22px;
+    position: relative;
+  }
+
+  .exp-bullets li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.65em;
+    width: 10px;
+    height: 1px;
+    background: var(--grad-3);
+  }
+
+  .exp-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  @media (max-width: 600px) {
+    .timeline { padding-left: 22px; }
+    .exp-dot { left: -18px; width: 14px; height: 14px; }
+    .timeline-line { left: 8px; }
+    .exp-card { padding: 22px 20px; }
+    .exp-role { font-size: 1.15rem; }
+  }
+</style>

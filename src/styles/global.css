@@ -1,0 +1,224 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Source+Code+Pro:ital,wght@0,400..600;1,400..600&family=Space+Grotesk:wght@400..700&display=swap');
+
+:root {
+  --bg: #08080c;
+  --bg-soft: #0f0f16;
+  --fg: #ffffff;
+  --muted: rgba(255, 255, 255, 0.55);
+  --faint: rgba(255, 255, 255, 0.3);
+  --line: rgba(255, 255, 255, 0.08);
+
+  /* brand gradient — from UI2 */
+  --grad-1: #b169db;
+  --grad-2: #f7d152;
+  --grad-3: #46cf71;
+  --grad-4: #0fbffa;
+  --grad: linear-gradient(135deg, var(--grad-1) 0%, var(--grad-2) 35%, var(--grad-3) 65%, var(--grad-4) 100%);
+  --grad-diag: linear-gradient(-45deg, #912acd 20%, #e6b71d 45%, #16a242 65%, #03b0ea 85%);
+
+  --radius: 20px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  color-scheme: dark;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 800px at 90% -10%, rgba(177, 105, 219, 0.12), transparent 60%),
+    radial-gradient(900px 600px at -10% 40%, rgba(15, 191, 250, 0.08), transparent 60%),
+    radial-gradient(1000px 700px at 50% 120%, rgba(70, 207, 113, 0.08), transparent 60%),
+    var(--bg);
+}
+
+::selection {
+  background: rgba(177, 105, 219, 0.4);
+  color: #fff;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* ---------- typography utilities ---------- */
+.h-display {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.mono {
+  font-family: 'Source Code Pro', ui-monospace, monospace;
+}
+
+.gradient-text {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.eyebrow {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* ---------- section frame ---------- */
+.section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 120px 28px;
+  position: relative;
+}
+
+.section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 56px;
+}
+
+.section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+/* ---------- reveal-on-scroll ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+  will-change: opacity, transform;
+}
+
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal[data-delay='1'] { transition-delay: 80ms; }
+.reveal[data-delay='2'] { transition-delay: 160ms; }
+.reveal[data-delay='3'] { transition-delay: 240ms; }
+.reveal[data-delay='4'] { transition-delay: 320ms; }
+.reveal[data-delay='5'] { transition-delay: 400ms; }
+
+/* ---------- chip ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s var(--ease);
+}
+
+.chip:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+/* ---------- link underline ---------- */
+.link-u {
+  position: relative;
+  display: inline-block;
+}
+
+.link-u::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0.2);
+  transform-origin: left;
+  opacity: 0.4;
+  transition: transform 0.5s var(--ease), opacity 0.3s;
+}
+
+.link-u:hover::after {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 720px) {
+  .section {
+    padding: 80px 20px;
+  }
+
+  .section-head {
+    margin-bottom: 36px;
+  }
+}
+
+/* ---------- hide cursor where our custom one is active ---------- */
+body.cursor-hidden, body.cursor-hidden * {
+  cursor: none !important;
+}
+
+/* hide on touch/coarse pointer devices */
+@media (hover: none) {
+  body.cursor-hidden, body.cursor-hidden * {
+    cursor: auto !important;
+  }
+}
+
+/* ---------- focus ---------- */
+:focus-visible {
+  outline: 2px solid var(--grad-4);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
