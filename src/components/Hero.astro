@@ -291,11 +291,15 @@ import { profile } from '../data/cv';
       particles = [];
       const off = document.createElement('canvas');
       const octx = off.getContext('2d', { willReadFrequently: true })!;
-      const target = Math.min(W * 0.9, 1100);
-      let fs = Math.floor(target / 3.2);
-      fs = Math.max(120, Math.min(fs, 520));
       off.width = W;
       off.height = H;
+
+      const targetW = W * 0.82;
+      let fs = 40;
+      octx.font = `800 ${fs}px "Space Grotesk", "Inter", sans-serif`;
+      const baseW = octx.measureText(TEXT).width || 1;
+      fs = Math.floor((targetW / baseW) * fs);
+      fs = Math.max(48, Math.min(fs, 520));
 
       octx.fillStyle = '#fff';
       octx.textAlign = 'center';
