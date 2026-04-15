@@ -312,7 +312,12 @@ import { projects } from '../data/cv';
     .proj-cards { gap: 40px; }
     .card-inner { padding: 26px 22px; }
     .proj-name { font-size: 1.55rem; }
-    .proj-path { display: none; }
+
+    .proj-path {
+      opacity: 0.7;
+      filter: drop-shadow(0 0 8px rgba(177, 105, 219, 0.3));
+    }
+    .proj-path path { vector-effect: non-scaling-stroke; }
   }
 </style>
 
