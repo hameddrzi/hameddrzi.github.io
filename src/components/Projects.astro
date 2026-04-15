@@ -34,6 +34,30 @@ import { projects } from '../data/cv';
         stroke-dasharray="24 40 100 40 24 40 220 40 24 20000"
         opacity="0.6"
       />
+      <path id="proj-p3"
+        d="M 60 160 c 60 0 140 30 200 80 c 80 66 160 66 240 0 c 60 -50 140 -80 200 -80 v 320 c 0 90 -70 160 -160 160 h -320 c -90 0 -160 70 -160 160 v 200 c 0 90 70 160 160 160 h 240"
+        fill="none" stroke="url(#pcl1)" stroke-width="4" stroke-linecap="round"
+        stroke-dasharray="10 20 60 20 10 20 140 20 10 20 80 20 10 20000"
+        opacity="0.5"
+      />
+      <path id="proj-p4"
+        d="M 170 0 v 180 c 0 60 40 100 100 100 h 200 c 60 0 100 40 100 100 v 200 c 0 60 -40 100 -100 100 h -240 c -60 0 -100 40 -100 100 v 260 c 0 60 50 100 100 100 h 230"
+        fill="none" stroke="url(#pcl1)" stroke-width="3" stroke-linecap="round"
+        stroke-dasharray="20 30 120 30 20 30 180 30 20 30 100 30 20 20000"
+        opacity="0.45"
+      />
+      <path id="proj-p5"
+        d="M 700 20 h -300 c -80 0 -160 70 -160 150 v 180 c 0 80 80 150 160 150 h 200 c 80 0 160 70 160 150 v 200 c 0 80 -80 150 -160 150 h -260 c -80 0 -160 70 -160 150 v 200"
+        fill="none" stroke="url(#pcl1)" stroke-width="3" stroke-linecap="round"
+        stroke-dasharray="16 22 90 22 16 22 170 22 16 22 90 22 16 20000"
+        opacity="0.55"
+      />
+      <path id="proj-p6"
+        d="M 370 40 c -100 30 -180 120 -180 220 v 180 c 0 100 80 180 180 210 c 100 30 180 120 180 220 v 180 c 0 100 -80 180 -180 210 c -100 30 -180 120 -180 220"
+        fill="none" stroke="url(#pcl1)" stroke-width="2.5" stroke-linecap="round"
+        stroke-dasharray="8 14 50 14 8 14 110 14 8 14 70 14 8 20000"
+        opacity="0.4"
+      />
     </svg>
 
     <div class="proj-cards">
@@ -303,8 +327,9 @@ import { projects } from '../data/cv';
       const vh = window.innerHeight;
       const total = rect.height + vh;
       const prog = Math.min(Math.max((vh - rect.top) / total, 0), 1);
+      const speeds = [2800, 1800, 2400, 2000, 2600, 1600];
       paths.forEach((p, i) => {
-        const speed = i === 0 ? 2800 : 1800;
+        const speed = speeds[i] ?? 2000;
         p.style.strokeDashoffset = String(-prog * speed);
       });
     };
