@@ -1,116 +1,50 @@
 ---
-// Custom follower cursor — inspired by UI1.
+// OWNER: Agent "shell". Markup + styles; logic in src/scripts/fx/cursor.ts.
+// Native cursor is hidden only once this one is live (html.has-cursor), desktop fine pointers only.
+import type { Lang } from '../data/cv';
+interface Props { lang: Lang }
+const { lang: _lang } = Astro.props;
 ---
-
-<div class="cursor" id="cursor" aria-hidden="true">
-  <span class="cursor-dot"></span>
+<div class="cursor" data-cursor-root aria-hidden="true">
+  <div class="cursor__ring" data-cursor-ring><span class="cursor__ring-in"></span></div>
+  <div class="cursor__pill" data-cursor-pill><span class="cursor__pill-in"><span data-cursor-label></span></span></div>
+  <div class="cursor__dot" data-cursor-dot><span class="cursor__dot-in"></span></div>
 </div>
 
 <style>
-  .cursor {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 38px;
-    height: 38px;
-    margin: -19px 0 0 -19px;
-    border-radius: 50%;
-    border: 1.5px solid rgba(255, 255, 255, 0.35);
-    pointer-events: none;
-    z-index: 9999;
-    transition:
-      width 0.3s var(--ease),
-      height 0.3s var(--ease),
-      margin 0.3s var(--ease),
-      border-color 0.3s,
-      background 0.3s,
-      transform 0.12s ease-out;
-    mix-blend-mode: difference;
-    will-change: transform;
+  .cursor { position: fixed; inset: 0; z-index: var(--z-cursor); pointer-events: none; opacity: 0; transition: opacity 0.35s var(--ease-out); }
+  .cursor:global(.is-visible) { opacity: 1; }
+  @media not all and (hover: hover) and (pointer: fine) { .cursor { display: none; } }
+
+  .cursor__ring, .cursor__dot, .cursor__pill { position: fixed; left: 0; top: 0; width: 0; height: 0; will-change: transform; }
+
+  .cursor__ring { mix-blend-mode: difference; }
+  .cursor__ring-in {
+    position: absolute; left: -20px; top: -20px; width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid #fff; background: transparent;
+    transition: transform 0.55s var(--ease-out), background-color 0.4s var(--ease-out), border-color 0.4s;
+  }
+  .cursor__dot-in {
+    position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--signal);
+    transition: transform 0.4s var(--ease-out);
+  }
+  .cursor__pill-in {
+    position: absolute; left: 0; top: 0; transform: translate(-50%, -50%) scale(0);
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 88px; height: 88px; padding: 0 22px; border-radius: 999px;
+    background: var(--signal); color: var(--signal-ink);
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
+    transition: transform 0.5s var(--ease-out);
   }
 
-  .cursor-dot {
-    position: absolute;
-    inset: 0;
-    margin: auto;
-    width: 4px;
-    height: 4px;
-    background: #fff;
-    border-radius: 50%;
-    transition: opacity 0.25s;
-  }
-
-  .cursor.hover {
-    width: 64px;
-    height: 64px;
-    margin: -32px 0 0 -32px;
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-
-  .cursor.hover .cursor-dot { opacity: 0; }
-
-  .cursor.link {
-    width: 80px;
-    height: 80px;
-    margin: -40px 0 0 -40px;
-    background: rgba(255, 255, 255, 0.9);
-    border-color: transparent;
-    mix-blend-mode: normal;
-  }
-
-  .cursor.link .cursor-dot { opacity: 0; }
-
-  @media (hover: none) {
-    .cursor { display: none; }
-  }
+  /* hover on links/buttons: ring grows into a solid inverted disc, dot hides */
+  .cursor:global(.is-hover) .cursor__ring-in { transform: scale(1.75); background: #fff; }
+  .cursor:global(.is-hover) .cursor__dot-in { transform: scale(0); }
+  /* labelled: pill takes over */
+  .cursor:global(.is-label) .cursor__ring-in { transform: scale(0); }
+  .cursor:global(.is-label) .cursor__dot-in { transform: scale(0); }
+  .cursor:global(.is-label) .cursor__pill-in { transform: translate(-50%, -50%) scale(1); }
+  .cursor:global(.is-down) .cursor__ring-in { transform: scale(0.7); }
+  .cursor:global(.is-down.is-hover) .cursor__ring-in { transform: scale(1.45); }
 </style>
-
-<script>
-  const el = document.getElementById('cursor');
-  if (el && window.matchMedia('(hover: hover)').matches) {
-    let tx = window.innerWidth / 2;
-    let ty = window.innerHeight / 2;
-    let cx = tx;
-    let cy = ty;
-
-    window.addEventListener('pointermove', (e) => {
-      tx = e.clientX;
-      ty = e.clientY;
-    });
-
-    const step = () => {
-      cx += (tx - cx) * 0.22;
-      cy += (ty - cy) * 0.22;
-      el.style.transform = `translate(${cx}px, ${cy}px)`;
-      requestAnimationFrame(step);
-    };
-    step();
-
-    const setHover = (on: boolean, kind: 'hover' | 'link' = 'hover') => {
-      el.classList.remove('hover', 'link');
-      if (on) el.classList.add(kind);
-    };
-
-    document.addEventListener('mouseover', (e) => {
-      const t = e.target as HTMLElement;
-      if (!t) return;
-      if (t.closest('a, button, .chip, [data-cursor="link"]')) {
-        setHover(true, 'link');
-      } else if (t.closest('[data-cursor="hover"]')) {
-        setHover(true, 'hover');
-      }
-    });
-
-    document.addEventListener('mouseout', (e) => {
-      const t = e.target as HTMLElement;
-      if (!t) return;
-      if (t.closest('a, button, .chip, [data-cursor]')) {
-        setHover(false);
-      }
-    });
-  } else if (el) {
-    el.style.display = 'none';
-    document.body.classList.remove('cursor-hidden');
-  }
-</script>

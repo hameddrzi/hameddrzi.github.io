@@ -1,357 +1,491 @@
 ---
-import { projects } from '../data/cv';
----
+// (03) Projects: the showpiece. Desktop (>=1024px, motion OK): pinned horizontal track, one 100vw chapter per
+// project, each designed around its GL particle form. Mobile / reduced motion: stacked full-height chapters.
+// OWNER: Agent "projects".
+import { projects, ui, tr, type Lang } from '../data/cv';
+import ProjectPanel from './projects/ProjectPanel.astro';
+import VoiceDemo from './projects/VoiceDemo.astro';
+import CookDemo from './projects/CookDemo.astro';
+import PulseDemo from './projects/PulseDemo.astro';
+import MedDemo from './projects/MedDemo.astro';
 
-<section id="projects" class="section projects">
-  <header class="section-head">
-    <span class="eyebrow reveal">03 · Projects</span>
-    <h2 class="section-title reveal" data-delay="1">
-      Cose che ho <span class="gradient-text">creato</span>.
-    </h2>
-    <p class="section-sub reveal mono" data-delay="2">
-      ↓ scroll — la luce segue il tuo viaggio
-    </p>
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+
+const L = {
+  meta: { en: '(03) — Projects', it: '(03) — Progetti' },
+  title: { en: ['Things I', 'made'], it: ['Cose che ho', 'creato'] },
+  intro: {
+    en: 'Four apps, built end to end. Each one has a small live demo, so you can feel how it works.',
+    it: 'Quattro app, costruite da capo a fondo. Ognuna ha una piccola demo live, per capire come funziona.',
+  },
+  index: { en: 'Index', it: 'Indice' },
+};
+const sides: ('left' | 'right')[] = ['right', 'left', 'right', 'left'];
+const demos = { voice: VoiceDemo, cookwhat: CookDemo, heart: PulseDemo, medcheck: MedDemo } as const;
+const [t1, t2] = L.title[lang];
+---
+<section id="projects" class="pj" data-gl="voice" data-gl-side="right" aria-labelledby="projects-title">
+  <header class="wrap pj-head">
+    <div class="pj-head-main">
+      <p class="meta" data-scramble>{L.meta[lang]}</p>
+      <h2 id="projects-title" class="pj-title" data-split>
+        {t1} <span class="serif">{t2}</span>
+      </h2>
+    </div>
+    <div class="pj-head-side">
+      <p class="pj-intro" data-reveal>{L.intro[lang]}</p>
+      <nav class="pj-index" aria-label={`${tr(ui.nav.projects, lang)} — ${L.index[lang]}`}>
+        <ol>
+          {projects.map((p, k) => (
+            <li>
+              <a href={`#project-${p.key}`} data-pj-goto={k} style={`--accent:${p.accent}`} data-cursor="Go">
+                <span class="meta">{p.index}</span>
+                <span class="pj-index-name">{p.name}</span>
+                <span class="pj-index-tag">{tr(p.tagline, lang)}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </div>
   </header>
 
-  <div class="proj-wrap">
-    <svg class="proj-path" id="projPath" viewBox="0 0 740 1400" preserveAspectRatio="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="pcl1" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#b169db"/>
-          <stop offset="33%" stop-color="#f7d152"/>
-          <stop offset="66%" stop-color="#46cf71"/>
-          <stop offset="100%" stop-color="#0fbffa"/>
-        </linearGradient>
-      </defs>
-      <path id="proj-p1"
-        d="M 106 40 h 375 c 114 0 226 128 226 235 v 220 c 0 136 -122 222 -224 221 l -182 -2 c -89 1 -141 42 -142 158 l -2 204 c -1 117 37 173 134 173 h 186 c 80 0 200 95 200 200"
-        fill="none" stroke="url(#pcl1)" stroke-width="7" stroke-linecap="round"
-        stroke-dasharray="14 18 80 26 14 26 160 26 14 26 80 26 14 20000"
-      />
-      <path id="proj-p2"
-        d="M 33 80 h 444 c 96 0 190 107 190 201 v 224 c 0 116 -98 188 -190 187 l -192 -2 c -92 0 -166 75 -166 168 v 278 c 0 94 74 169 166 169 h 194"
-        fill="none" stroke="url(#pcl1)" stroke-width="5" stroke-linecap="round"
-        stroke-dasharray="24 40 100 40 24 40 220 40 24 20000"
-        opacity="0.6"
-      />
-      <path id="proj-p3"
-        d="M 60 160 c 60 0 140 30 200 80 c 80 66 160 66 240 0 c 60 -50 140 -80 200 -80 v 320 c 0 90 -70 160 -160 160 h -320 c -90 0 -160 70 -160 160 v 200 c 0 90 70 160 160 160 h 240"
-        fill="none" stroke="url(#pcl1)" stroke-width="4" stroke-linecap="round"
-        stroke-dasharray="10 20 60 20 10 20 140 20 10 20 80 20 10 20000"
-        opacity="0.5"
-      />
-      <path id="proj-p4"
-        d="M 170 0 v 180 c 0 60 40 100 100 100 h 200 c 60 0 100 40 100 100 v 200 c 0 60 -40 100 -100 100 h -240 c -60 0 -100 40 -100 100 v 260 c 0 60 50 100 100 100 h 230"
-        fill="none" stroke="url(#pcl1)" stroke-width="3" stroke-linecap="round"
-        stroke-dasharray="20 30 120 30 20 30 180 30 20 30 100 30 20 20000"
-        opacity="0.45"
-      />
-      <path id="proj-p5"
-        d="M 700 20 h -300 c -80 0 -160 70 -160 150 v 180 c 0 80 80 150 160 150 h 200 c 80 0 160 70 160 150 v 200 c 0 80 -80 150 -160 150 h -260 c -80 0 -160 70 -160 150 v 200"
-        fill="none" stroke="url(#pcl1)" stroke-width="3" stroke-linecap="round"
-        stroke-dasharray="16 22 90 22 16 22 170 22 16 22 90 22 16 20000"
-        opacity="0.55"
-      />
-      <path id="proj-p6"
-        d="M 370 40 c -100 30 -180 120 -180 220 v 180 c 0 100 80 180 180 210 c 100 30 180 120 180 220 v 180 c 0 100 -80 180 -180 210 c -100 30 -180 120 -180 220"
-        fill="none" stroke="url(#pcl1)" stroke-width="2.5" stroke-linecap="round"
-        stroke-dasharray="8 14 50 14 8 14 110 14 8 14 70 14 8 20000"
-        opacity="0.4"
-      />
-    </svg>
+  <div class="pj-pin">
+    <div class="pj-track">
+      {projects.map((p, k) => {
+        const Demo = demos[p.key];
+        return (
+          <ProjectPanel project={p} lang={lang} side={sides[k] ?? 'right'} i={k} total={projects.length}>
+            <Demo project={p} lang={lang} />
+          </ProjectPanel>
+        );
+      })}
+    </div>
 
-    <div class="proj-cards">
-      {projects.map((p, i) => (
-        <article class="proj-card reveal" data-delay={(i + 1).toString()} data-cursor="hover">
-          <div class="card-inner">
-            <div class="card-top">
-              <span class="kind mono">{p.kind}</span>
-              <div class={`icon icon-${p.icon}`} aria-hidden="true">
-                {p.icon === 'health' && (
-                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M24 42s-14-8-14-20a8 8 0 0 1 14-5 8 8 0 0 1 14 5c0 12-14 20-14 20z" />
-                    <path d="M17 24h4l2-4 3 8 2-4h5" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                )}
-                {p.icon === 'figma' && (
-                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M24 6h8a6 6 0 1 1 0 12h-8Z"/>
-                    <path d="M16 6h8v12h-8a6 6 0 1 1 0-12Z"/>
-                    <path d="M16 18h8v12h-8a6 6 0 1 1 0-12Z"/>
-                    <path d="M24 18h8a6 6 0 1 1-8 6"/>
-                    <circle cx="30" cy="36" r="6"/>
-                  </svg>
-                )}
-                {p.icon === 'code' && (
-                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                    <path d="M18 14 8 24l10 10"/>
-                    <path d="M30 14l10 10-10 10"/>
-                    <path d="M27 10l-6 28"/>
-                  </svg>
-                )}
-                {p.icon === 'spark' && (
-                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                    <path d="M24 6v12M24 30v12M6 24h12M30 24h12M12 12l8 8M28 28l8 8M36 12l-8 8M12 36l8-8"/>
-                  </svg>
-                )}
-              </div>
-            </div>
-
-            <h3 class="proj-name">{p.name}</h3>
-            {p.period && <p class="proj-period mono">{p.period}</p>}
-            <p class="proj-desc">{p.description}</p>
-
-            <div class="proj-stack">
-              {p.stack.map((s) => <span class="chip">{s}</span>)}
-            </div>
-
-            {p.link && (
-              <a class="proj-link" href={p.link.url} target="_blank" rel="noopener">
-                <span>{p.link.label}</span>
-                <span class="arrow">↗</span>
-              </a>
-            )}
-          </div>
-        </article>
-      ))}
+    <div class="pj-hud" aria-hidden="true">
+      <span class="meta pj-hud-idx"><b data-hud-idx>01</b> / {String(projects.length).padStart(2, '0')}</span>
+      <span class="pj-hud-bars">
+        {projects.map((p) => <span class="pj-hud-seg" style={`--accent:${p.accent}`}><i></i></span>)}
+      </span>
+      <span class="meta pj-hud-name" data-hud-name>{projects[0].name}</span>
+      <span class="meta pj-hud-hint">{tr(ui.scroll, lang)} →</span>
     </div>
   </div>
 </section>
 
 <style>
-  .projects { padding-top: 80px; }
-
-  .section-sub {
-    font-size: 0.72rem;
-    letter-spacing: 0.22em;
-    color: var(--faint);
-    text-transform: uppercase;
-  }
-
-  .proj-wrap {
+  .pj {
+    --pj-accent: var(--signal);
     position: relative;
+    padding-top: var(--section-y);
   }
 
-  .proj-path {
-    position: absolute;
-    inset: -40px 0 -40px 0;
-    width: 100%;
-    height: calc(100% + 80px);
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.85;
-    filter: drop-shadow(0 0 12px rgba(177, 105, 219, 0.35));
+  /* ---------- header ---------- */
+  .pj-head {
+    display: grid;
+    gap: 40px;
+    padding-bottom: clamp(32px, 8svh, 96px);
   }
-
-  .proj-cards {
+  .pj-title {
+    margin-top: 18px;
+    font-size: var(--fs-h1);
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+    font-weight: 500;
+  }
+  .pj-title .serif { color: var(--signal); padding-right: 0.06em; }
+  .pj-intro {
+    max-width: 38ch;
+    color: var(--fg-2);
+    font-size: var(--fs-lead);
+    line-height: 1.35;
+  }
+  .pj-index { margin-top: 28px; }
+  .pj-index ol { border-top: 1px solid var(--line); }
+  .pj-index a {
     position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 60px;
-    max-width: 720px;
-    margin: 0 auto;
-  }
-
-  .proj-card {
-    position: relative;
-    align-self: center;
-    width: 100%;
-    max-width: 560px;
-    border-radius: 24px;
-    padding: 1px;
-    background: linear-gradient(135deg,
-      rgba(177, 105, 219, 0.5),
-      rgba(247, 209, 82, 0.25),
-      rgba(70, 207, 113, 0.25),
-      rgba(15, 191, 250, 0.5));
-    transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease);
-  }
-
-  .proj-card:nth-child(odd) { align-self: flex-start; }
-  .proj-card:nth-child(even) { align-self: flex-end; }
-
-  .proj-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-  }
-
-  .card-inner {
-    position: relative;
-    padding: 34px 34px 30px;
-    border-radius: 23px;
-    background:
-      radial-gradient(closest-corner, rgba(255,255,255,0.04) 0%, rgba(12, 12, 18, 0.9) 90%),
-      linear-gradient(135deg, rgba(15, 15, 22, 0.85), rgba(8, 8, 12, 0.95));
-    backdrop-filter: blur(22px);
+    display: grid;
+    grid-template-columns: 2.6em auto 1fr;
+    align-items: baseline;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
     overflow: hidden;
   }
-
-  .card-inner::before {
+  .pj-index a::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background:
-      radial-gradient(closest-side, rgba(177, 105, 219, 0.18), transparent 60%);
-    opacity: 0;
-    transform: translate(var(--mx, 0), var(--my, 0));
-    transition: opacity 0.5s;
+    inset: auto 0 -1px 0;
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.6s var(--ease-out);
+  }
+  .pj-index a:hover::before, .pj-index a:focus-visible::before { transform: scaleX(1); }
+  .pj-index .meta { color: var(--accent); }
+  .pj-index-name { font-size: 1.25rem; letter-spacing: -0.02em; font-weight: 500; }
+  .pj-index-tag {
+    color: var(--fg-3);
+    font-size: 0.85rem;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ---------- track (stacked by default; JS turns on the horizontal mode) ---------- */
+  .pj-pin { position: relative; }
+  .pj-hud { display: none; }
+
+  .pj.is-h .pj-pin {
+    height: 100svh;
+    overflow: hidden;
+  }
+  .pj.is-h .pj-track {
+    display: flex;
+    width: max-content;
+    height: 100%;
+    will-change: transform;
+  }
+  .pj.is-h .pj-track > :global(.pj-panel) {
+    flex: 0 0 var(--pj-vw, 100vw);
+    width: var(--pj-vw, 100vw);
+    height: 100svh;
+    min-height: 0;
+  }
+  /* index numerals straddle the seam between two chapters */
+  .pj.is-h :global(.pj-num),
+  .pj.is-h :global(.pj-panel--left .pj-num) {
+    top: 50%;
+    bottom: auto;
+    left: 0;
+    right: auto;
+    translate: -50% -50%;
+    font-size: clamp(14rem, 48svh, 34rem);
+    opacity: 0.5;
+    z-index: 0;
+  }
+
+  /* ---------- HUD ---------- */
+  .pj.is-h .pj-hud {
+    position: absolute;
+    z-index: 5;
+    left: var(--gutter);
+    right: var(--gutter);
+    bottom: clamp(18px, 3.4svh, 34px);
+    display: flex;
+    align-items: center;
+    gap: 22px;
     pointer-events: none;
   }
-
-  .proj-card:hover .card-inner::before { opacity: 1; }
-
-  .card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 14px;
-    margin-bottom: 22px;
+  .pj-hud-idx { color: var(--fg-2); font-variant-numeric: tabular-nums; }
+  .pj-hud-idx b { color: var(--pj-accent); font-weight: 500; transition: color 0.6s; }
+  .pj-hud-bars { display: flex; gap: 6px; }
+  .pj-hud-seg {
+    position: relative;
+    width: clamp(40px, 6vw, 96px);
+    height: 2px;
+    background: var(--line-strong);
+    overflow: hidden;
   }
-
-  .kind {
-    font-size: 0.62rem;
-    letter-spacing: 0.22em;
-    color: var(--faint);
-    text-transform: uppercase;
-    padding-top: 6px;
+  .pj-hud-seg i {
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
   }
+  .pj-hud-name { color: var(--fg); min-width: 10ch; }
+  .pj-hud-hint { margin-left: auto; color: var(--fg-3); }
 
-  .icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    display: grid;
-    place-items: center;
-    background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-    border: 1px solid var(--line);
-    color: #fff;
-    flex-shrink: 0;
-  }
-
-  .icon svg {
-    width: 28px;
-    height: 28px;
-  }
-
-  .icon-health { color: #ff7aa8; }
-  .icon-figma { color: #f7d152; }
-  .icon-code { color: #46cf71; }
-  .icon-spark { color: #0fbffa; }
-
-  .proj-name {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 2rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    margin-bottom: 6px;
-  }
-
-  .proj-period {
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    color: var(--faint);
-    margin-bottom: 14px;
-  }
-
-  .proj-desc {
-    font-size: 0.96rem;
-    line-height: 1.65;
-    color: rgba(255, 255, 255, 0.78);
-    margin-top: 10px;
-    margin-bottom: 22px;
-  }
-
-  .proj-stack {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 24px;
-  }
-
-  .proj-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #fff;
-    padding: 10px 16px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.04);
-    transition: all 0.35s var(--ease);
-  }
-
-  .proj-link:hover {
-    background: #fff;
-    color: #0b0b12;
-    border-color: transparent;
-    transform: translateY(-2px);
-  }
-
-  .proj-link .arrow {
-    transition: transform 0.3s var(--ease);
-  }
-
-  .proj-link:hover .arrow {
-    transform: translate(4px, -4px);
-  }
-
-  @media (max-width: 760px) {
-    .proj-card,
-    .proj-card:nth-child(odd),
-    .proj-card:nth-child(even) {
-      align-self: stretch;
+  @media (min-width: 1024px) {
+    .pj-head {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      align-items: end;
+      gap: 6vw;
     }
-
-    .proj-cards { gap: 40px; }
-    .card-inner { padding: 26px 22px; }
-    .proj-name { font-size: 1.55rem; }
-
-    .proj-path {
-      opacity: 0.7;
-      filter: drop-shadow(0 0 8px rgba(177, 105, 219, 0.3));
-    }
-    .proj-path path { vector-effect: non-scaling-stroke; }
   }
 </style>
 
 <script>
-  // scroll-driven dash offset — inspired by UI2
-  const paths = document.querySelectorAll<SVGPathElement>('#projPath path');
-  const host = document.querySelector('.projects');
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { reducedMotion, finePointer, whenReady, scrambleTo } from './projects/runtime';
 
-  if (paths.length && host) {
-    const onScroll = () => {
-      const rect = host.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const total = rect.height + vh;
-      const prog = Math.min(Math.max((vh - rect.top) / total, 0), 1);
-      const speeds = [2800, 1800, 2400, 2000, 2600, 1600];
-      paths.forEach((p, i) => {
-        const speed = speeds[i] ?? 2000;
-        p.style.strokeDashoffset = String(-prog * speed);
-      });
+  gsap.registerPlugin(ScrollTrigger);
+
+  const section = document.querySelector<HTMLElement>('#projects');
+  if (section) initProjects(section);
+
+  function initProjects(section: HTMLElement) {
+    const pinEl = section.querySelector<HTMLElement>('.pj-pin')!;
+    const track = section.querySelector<HTMLElement>('.pj-track')!;
+    const panels = Array.from(section.querySelectorAll<HTMLElement>('.pj-panel'));
+    const hudIdx = section.querySelector<HTMLElement>('[data-hud-idx]');
+    const hudName = section.querySelector<HTMLElement>('[data-hud-name]');
+    const hudFill = Array.from(section.querySelectorAll<HTMLElement>('.pj-hud-seg i'));
+    const n = panels.length;
+    const reduce = reducedMotion();
+
+    // ------------------------------------------------------------------
+    // Active chapter: same rule the GL engine uses (rect containing the viewport center)
+    // ------------------------------------------------------------------
+    let active = -2;
+    let tinted = false;
+    const setActive = (i: number) => {
+      if (i === active) return;
+      active = i;
+      panels.forEach((p, k) => p.classList.toggle('is-active', k === i));
+      if (i >= 0) {
+        const p = panels[i];
+        const color = p.dataset.accent || null;
+        if (color) section.style.setProperty('--pj-accent', color);
+        if (hudIdx) hudIdx.textContent = String(i + 1).padStart(2, '0');
+        if (hudName) scrambleTo(hudName, p.dataset.name || '');
+        window.dispatchEvent(new CustomEvent('gl:accent', { detail: { color } }));
+        tinted = true;
+      } else if (tinted) {
+        window.dispatchEvent(new CustomEvent('gl:accent', { detail: null }));
+        tinted = false;
+      }
+    };
+    const computeActive = () => {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      let idx = -1;
+      for (let k = 0; k < n; k++) {
+        const r = panels[k].getBoundingClientRect();
+        if (cx >= r.left && cx < r.right && cy >= r.top && cy < r.bottom) idx = k;
+      }
+      if (idx < 0) {
+        const r = section.getBoundingClientRect();
+        if (cy >= r.top && cy < r.bottom) idx = 0; // header → the section's own form (voice)
+      }
+      setActive(idx);
+    };
+    let raf = 0;
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(() => ((raf = 0), computeActive()));
+    };
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top bottom',
+      end: 'bottom top',
+      onUpdate: schedule,
+      onToggle: schedule,
+      onRefresh: schedule,
+    });
+    window.addEventListener('resize', schedule, { passive: true });
+
+    // ------------------------------------------------------------------
+    // Layout modes
+    // ------------------------------------------------------------------
+    let hTween: gsap.core.Tween | null = null;
+    const dist = () => Math.max(0, track.scrollWidth - document.documentElement.clientWidth);
+    const setVw = () => section.style.setProperty('--pj-vw', `${document.documentElement.clientWidth}px`);
+
+    const hudProgress = (p: number) => {
+      const x = p * (n - 1);
+      hudFill.forEach((el, k) => gsap.set(el, { scaleX: gsap.utils.clamp(0, 1, x + 1 - k) }));
     };
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    onScroll();
-  }
+    const mm = gsap.matchMedia();
 
-  // card glow follows mouse
-  document.querySelectorAll<HTMLElement>('.proj-card').forEach((card) => {
-    card.addEventListener('pointermove', (e) => {
-      const r = card.getBoundingClientRect();
-      const x = ((e.clientX - r.left) - r.width / 2);
-      const y = ((e.clientY - r.top) - r.height / 2);
-      card.style.setProperty('--mx', `${x * 0.3}px`);
-      card.style.setProperty('--my', `${y * 0.3}px`);
+    // ---- desktop: pinned horizontal track ----
+    mm.add('(min-width: 1024px) and (prefers-reduced-motion: no-preference)', (ctx) => {
+      section.classList.add('is-h');
+      setVw();
+      const onResize = () => setVw();
+      window.addEventListener('resize', onResize);
+
+      hTween = gsap.to(track, {
+        x: () => -dist(),
+        ease: 'none',
+        onUpdate() {
+          hudProgress(this.progress());
+          schedule();
+        },
+        scrollTrigger: {
+          trigger: pinEl,
+          pin: true,
+          start: 'top top',
+          end: () => `+=${dist()}`,
+          scrub: 0.9,
+          invalidateOnRefresh: true,
+          anticipatePin: 1,
+          refreshPriority: 1,
+          onRefreshInit: setVw,
+        },
+      });
+      hudProgress(0);
+      const tween = hTween;
+
+      panels.forEach((panel, k) => {
+        const content = panel.querySelector<HTMLElement>('.pj-content')!;
+        const kids = Array.from(content.children);
+        const demo = panel.querySelector<HTMLElement>('.pj-demo')!;
+        const demoInner = demo.firstElementChild;
+        const num = panel.querySelector<HTMLElement>('.pj-num');
+        const name = panel.querySelector<HTMLElement>('.pj-name');
+        const st = (start: string, end: string) => ({ trigger: panel, containerAnimation: tween, start, end, scrub: true });
+
+        // giant index numeral scrub-scales across its whole passage
+        if (num) gsap.fromTo(num, { scale: 0.45, xPercent: 30 }, { scale: 1.15, xPercent: -30, ease: 'none', scrollTrigger: st('left right', 'right left') });
+
+        if (k > 0) {
+          // entering: copy slides in from the right with a stagger, demo masks open like a slit
+          gsap.fromTo(kids, { x: () => window.innerWidth * 0.16, opacity: 0 }, { x: 0, opacity: 1, ease: 'power2.out', stagger: 0.06, scrollTrigger: st('left 92%', 'left 18%') });
+          if (name) gsap.fromTo(name, { skewX: -12 }, { skewX: 0, ease: 'power2.out', scrollTrigger: st('left 80%', 'left 20%') });
+          gsap.fromTo(demo, { clipPath: 'inset(46% 10% 46% 10% round 28px)' }, { clipPath: 'inset(-30% -30% -30% -30% round 0px)', ease: 'power3.inOut', scrollTrigger: st('left 96%', 'left 12%') });
+          if (demoInner) gsap.fromTo(demoInner, { scale: 1.18, rotation: k % 2 ? -3 : 3 }, { scale: 1, rotation: 0, ease: 'power3.out', scrollTrigger: st('left 96%', 'left 12%') });
+        }
+        if (k < n - 1) {
+          // leaving: copy lags behind (parallax) and dims, demo recedes
+          gsap.to(content, { x: () => window.innerWidth * 0.18, opacity: 0, ease: 'power1.in', scrollTrigger: st('left left', 'left -38%') });
+          gsap.to(demo, { x: () => window.innerWidth * 0.12, scale: 0.86, opacity: 0, ease: 'power1.in', scrollTrigger: st('left left', 'left -42%') });
+        }
+      });
+
+      // first chapter + header intro once the shell is ready (vertical trigger, before the pin)
+      whenReady(() =>
+        ctx.add(() => {
+          introPanel(panels[0]);
+        }),
+      );
+
+      // keyboard: focusing something inside an offscreen chapter scrolls that chapter into place
+      const onFocus = (e: FocusEvent) => {
+        const panel = (e.target as HTMLElement).closest<HTMLElement>('.pj-panel');
+        pinEl.scrollLeft = 0;
+        if (!panel) return;
+        const k = panels.indexOf(panel);
+        if (k !== active) goTo(k, true);
+      };
+      section.addEventListener('focusin', onFocus);
+
+      return () => {
+        section.classList.remove('is-h');
+        section.style.removeProperty('--pj-vw');
+        window.removeEventListener('resize', onResize);
+        section.removeEventListener('focusin', onFocus);
+        hTween = null;
+      };
     });
-  });
+
+    // ---- mobile / tablet / reduced motion: stacked chapters ----
+    mm.add('(max-width: 1023px), (prefers-reduced-motion: reduce)', (ctx) => {
+      if (reduce) return;
+      whenReady(() =>
+        ctx.add(() => {
+          panels.forEach((panel) => {
+            introPanel(panel);
+            const num = panel.querySelector<HTMLElement>('.pj-num');
+            if (num)
+              gsap.fromTo(num, { yPercent: 25, scale: 0.85 }, { yPercent: -25, scale: 1.05, ease: 'none', scrollTrigger: { trigger: panel, start: 'top bottom', end: 'bottom top', scrub: true } });
+          });
+        }),
+      );
+    });
+
+    function introPanel(panel: HTMLElement) {
+      if (reduce) return;
+      const kids = Array.from(panel.querySelector('.pj-content')?.children ?? []);
+      const demo = panel.querySelector<HTMLElement>('.pj-demo');
+      const tl = gsap.timeline({
+        scrollTrigger: { trigger: panel, start: 'top 72%', once: true },
+        defaults: { ease: 'expo.out' },
+      });
+      tl.from(kids, { y: 60, opacity: 0, duration: 1.2, stagger: 0.08 });
+      if (demo)
+        tl.fromTo(
+          demo,
+          { clipPath: 'inset(48% 0% 48% 0% round 28px)' },
+          { clipPath: 'inset(-30% -30% -30% -30% round 0px)', duration: 1.5, ease: 'power4.inOut' },
+          0.1,
+        );
+    }
+
+    // ------------------------------------------------------------------
+    // Navigation into chapters (index links + keyboard focus)
+    // ------------------------------------------------------------------
+    function goTo(k: number, immediate = false) {
+      const st = hTween?.scrollTrigger;
+      const lenis = (window as unknown as { __lenis?: { scrollTo: (y: number, o?: object) => void } }).__lenis;
+      let y: number;
+      if (st && section.classList.contains('is-h')) {
+        y = st.start + (st.end - st.start) * (n > 1 ? k / (n - 1) : 0);
+      } else {
+        y = panels[k].getBoundingClientRect().top + window.scrollY;
+      }
+      if (lenis) lenis.scrollTo(y, { immediate, duration: 1.6 });
+      else window.scrollTo({ top: y, behavior: immediate || reduce ? 'auto' : 'smooth' });
+      if (immediate) hTween?.scrollTrigger && ScrollTrigger.update();
+    }
+    section.addEventListener(
+      'click',
+      (e) => {
+        const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-pj-goto]');
+        if (!a) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const k = Number(a.dataset.pjGoto);
+        goTo(k);
+        history.replaceState(null, '', a.getAttribute('href'));
+      },
+      true,
+    );
+
+    // ------------------------------------------------------------------
+    // Name letters react to cursor proximity
+    // ------------------------------------------------------------------
+    if (!reduce && finePointer()) {
+      const names = panels.map((p) => Array.from(p.querySelectorAll<HTMLElement>('.pj-ch')));
+      const vals = names.map((l) => l.map(() => 0));
+      let px = -1e4;
+      let py = -1e4;
+      let loop = 0;
+      let idle = 0;
+      const frame = () => {
+        loop = 0;
+        let moving = false;
+        names.forEach((letters, k) => {
+          const isOn = k === active;
+          letters.forEach((el, j) => {
+            let target = 0;
+            if (isOn) {
+              const r = el.getBoundingClientRect();
+              const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
+              target = Math.max(0, 1 - d / 260) ** 1.6;
+            }
+            const v = vals[k][j] + (target - vals[k][j]) * 0.16;
+            if (Math.abs(v - vals[k][j]) > 0.002) moving = true;
+            vals[k][j] = v;
+            el.style.setProperty('--f', v.toFixed(3));
+          });
+        });
+        if (moving || performance.now() - idle < 400) loop = requestAnimationFrame(frame);
+      };
+      section.addEventListener('pointermove', (e) => {
+        px = e.clientX;
+        py = e.clientY;
+        idle = performance.now();
+        if (!loop) loop = requestAnimationFrame(frame);
+      });
+      section.addEventListener('pointerleave', () => {
+        px = py = -1e4;
+        idle = performance.now();
+        if (!loop) loop = requestAnimationFrame(frame);
+      });
+    }
+
+    // late layout shifts (web fonts, other sections) → recompute pin distances
+    document.fonts?.ready.then(() => ScrollTrigger.refresh());
+    whenReady(() => {
+      ScrollTrigger.refresh();
+      schedule();
+    });
+    schedule();
+  }
 </script>

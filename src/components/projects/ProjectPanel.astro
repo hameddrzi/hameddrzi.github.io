@@ -1,0 +1,308 @@
+---
+// One project chapter. Designed around its particle form: the form (and the live demo) sit on
+// `side`, the copy on the other side. OWNER: Agent "projects".
+import { tr, ui, type Lang, type Project } from '../../data/cv';
+
+interface Props {
+  project: Project;
+  lang: Lang;
+  side: 'left' | 'right';
+  i: number;
+  total: number;
+}
+const { project: p, lang, side, i, total } = Astro.props;
+
+// "65 offline recipes" -> big "65" + small "offline recipes". Anything else stays whole.
+const splitFact = (s: string) => {
+  const m = s.match(/^(~?\d+(?:\s?(?:s|Hz))?)\s+(.+)$/);
+  return m ? { big: m[1], small: m[2] } : { big: s, small: '' };
+};
+const facts = p.facts.map((f) => splitFact(tr(f, lang)));
+const letters = [...p.name];
+const idTitle = `pj-name-${p.key}`;
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+<article
+  id={`project-${p.key}`}
+  class:list={['pj-panel', `pj-panel--${side}`, i === 0 && 'is-active']}
+  data-gl={p.key}
+  data-gl-side={side}
+  data-index={i}
+  data-accent={p.accent}
+  data-name={p.name}
+  aria-labelledby={idTitle}
+  style={`--accent:${p.accent}`}
+>
+  <span class="pj-num" aria-hidden="true">{p.index}</span>
+  <div class="pj-glow" aria-hidden="true"></div>
+
+  <div class="pj-inner">
+    <div class="pj-content">
+      <p class="meta pj-kicker">
+        <span class="pj-kicker-n">{pad(i + 1)} / {pad(total)}</span>
+        <span class="pj-kicker-line" aria-hidden="true"></span>
+        <span data-scramble>{p.stack[0]}</span>
+      </p>
+
+      <h3 class="pj-name" id={idTitle} aria-label={p.name}>
+        <span aria-hidden="true">{letters.map((c) => <span class="pj-ch">{c}</span>)}</span>
+      </h3>
+
+      <p class="pj-tagline serif">{tr(p.tagline, lang)}</p>
+      <p class="pj-desc">{tr(p.description, lang)}</p>
+
+      <ul class="pj-facts">
+        {facts.map((f, k) => (
+          <li class="pj-fact">
+            <span class="meta pj-fact-k" aria-hidden="true">{String.fromCharCode(97 + k)}</span>
+            <span class="pj-fact-big">{f.big}</span>
+            {f.small && <span class="pj-fact-small">{f.small}</span>}
+          </li>
+        ))}
+      </ul>
+
+      <div class="pj-foot">
+        <ul class="pj-stack" aria-label="Stack">
+          {p.stack.map((s) => <li class="meta">{s}</li>)}
+        </ul>
+        {p.link && (
+          <a class="pj-link" href={p.link} target="_blank" rel="noopener noreferrer" data-magnetic data-cursor="GitHub">
+            <span class="pj-link-label">{tr(ui.viewCode, lang)}</span>
+            <span class="sr-only"> — {p.name} (GitHub)</span>
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 12 12 4M5.5 4H12v6.5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
+          </a>
+        )}
+      </div>
+    </div>
+
+    <div class="pj-demo">
+      <slot />
+    </div>
+  </div>
+</article>
+
+<style>
+  .pj-panel {
+    position: relative;
+    min-height: 100svh;
+    padding: clamp(72px, 12svh, 120px) 0 clamp(64px, 10svh, 112px);
+    display: flex;
+    align-items: center;
+    isolation: isolate;
+  }
+  .pj-inner {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: var(--maxw);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+    display: grid;
+    gap: clamp(40px, 6vw, 72px);
+  }
+
+  /* accent glow on the form side, drifts with the panel so the tint shifts as you travel */
+  .pj-glow {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(60% 55% at 72% 50%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+      radial-gradient(40% 40% at 72% 50%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 70%);
+    opacity: 0.55;
+    transition: opacity 1.2s var(--ease-out);
+  }
+  .pj-panel--left .pj-glow { transform: scaleX(-1); }
+  .pj-panel.is-active .pj-glow { opacity: 1; }
+
+  /* big chapter number */
+  .pj-num {
+    position: absolute;
+    z-index: 1;
+    top: clamp(24px, 6svh, 64px);
+    right: var(--gutter);
+    font-family: var(--font-sans);
+    font-weight: 200;
+    font-size: clamp(7rem, 34vw, 13rem);
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    color: transparent;
+    -webkit-text-stroke: 1px color-mix(in srgb, var(--accent) 45%, transparent);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* ---------- copy ---------- */
+  .pj-content {
+    position: relative;
+    max-width: 640px;
+  }
+  .pj-content::before {
+    /* soft local scrim so copy stays readable over particles */
+    content: '';
+    position: absolute;
+    inset: -12% -18%;
+    z-index: -1;
+    background: radial-gradient(closest-side, rgb(5 5 7 / 0.78), rgb(5 5 7 / 0.45) 60%, transparent);
+    pointer-events: none;
+  }
+  .pj-kicker {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--fg-2);
+  }
+  .pj-kicker-n { color: var(--accent); }
+  .pj-kicker-line {
+    width: 48px;
+    height: 1px;
+    background: var(--line-strong);
+  }
+  .pj-name {
+    margin-top: 14px;
+    font-size: clamp(3.4rem, 18vw, 6rem);
+    line-height: 0.88;
+    letter-spacing: -0.045em;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .pj-ch {
+    --f: 0;
+    display: inline-block;
+    font-weight: calc(600 - var(--f) * 360);
+    color: color-mix(in srgb, var(--accent) calc(var(--f) * 100%), var(--fg));
+    transform: translateY(calc(var(--f) * -0.07em));
+  }
+  .pj-tagline {
+    margin-top: 12px;
+    font-size: var(--fs-lead);
+    line-height: 1.2;
+    color: var(--accent);
+  }
+  .pj-desc {
+    margin-top: 18px;
+    max-width: 46ch;
+    color: var(--fg-2);
+  }
+
+  /* phones: facts as hairline rows (big value + label on one line) */
+  .pj-facts {
+    margin-top: 24px;
+    display: grid;
+    border-top: 1px solid var(--line-strong);
+  }
+  .pj-fact {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.4em auto 1fr;
+    align-items: baseline;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    min-width: 0;
+  }
+  .pj-fact::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 28px;
+    height: 1px;
+    background: var(--accent);
+  }
+  .pj-fact-k { color: var(--fg-3); font-size: 0.68rem; }
+  .pj-fact-big {
+    font-size: clamp(1.35rem, 6.4vw, 1.9rem);
+    line-height: 1.05;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    overflow-wrap: break-word;
+  }
+  .pj-fact-small { color: var(--fg-2); font-size: 0.9rem; line-height: 1.25; }
+
+  @media (min-width: 640px) {
+    .pj-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .pj-fact {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 14px 12px 4px 0;
+      border-bottom: 0;
+    }
+    .pj-fact + .pj-fact { padding-left: 12px; border-left: 1px solid var(--line); }
+    .pj-fact-small { font-size: 0.86rem; }
+  }
+
+  .pj-foot {
+    margin-top: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 24px;
+  }
+  .pj-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pj-stack li {
+    padding: 6px 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    color: var(--fg-2);
+    font-size: 0.7rem;
+  }
+  .pj-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+    color: var(--fg);
+    font-family: var(--font-mono);
+    font-size: var(--fs-meta);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: background-color 0.35s var(--ease-out), color 0.35s var(--ease-out);
+  }
+  .pj-link:hover,
+  .pj-link:focus-visible {
+    background: var(--accent);
+    color: var(--ink-0);
+  }
+  .pj-link:focus-visible { outline-color: var(--accent); }
+
+  .pj-demo {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 0;
+  }
+
+  /* ---------- ≥1024: two columns, form/demo on data-gl-side ---------- */
+  @media (min-width: 1024px) {
+    .pj-panel { min-height: 100svh; }
+    .pj-inner {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+    }
+    .pj-panel--left .pj-content { order: 2; }
+    .pj-panel--left .pj-demo { order: 1; }
+    .pj-name { font-size: clamp(4rem, min(8.2vw, 15svh), 10rem); }
+    .pj-fact-big { font-size: clamp(1.2rem, min(2.2vw, 4svh), 2.3rem); }
+    .pj-num {
+      top: auto;
+      right: auto;
+      bottom: 8svh;
+      left: var(--gutter);
+      font-size: clamp(10rem, 30svh, 22rem);
+      opacity: 0.6;
+    }
+    .pj-panel--left .pj-num { left: auto; right: var(--gutter); }
+  }
+</style>

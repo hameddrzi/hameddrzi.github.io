@@ -1,0 +1,512 @@
+---
+// MedCheck micro-demo: 3-question guided stepper -> doctor map with filters -> booking confirmation.
+// Auto-plays, fully clickable/keyboard-operable. All names/places are illustrative. OWNER: Agent "projects".
+import type { Lang, Project } from '../../data/cv';
+interface Props { project: Project; lang: Lang }
+const { lang } = Astro.props;
+
+const L = {
+  steps: [
+    { en: 'Questions', it: 'Domande' },
+    { en: 'Doctor', it: 'Medico' },
+    { en: 'Booked', it: 'Prenotato' },
+  ],
+  question: { en: 'Question', it: 'Domanda' },
+  pickPin: { en: 'Pick a doctor on the map', it: 'Scegli un medico sulla mappa' },
+  filters: { en: 'Filters', it: 'Filtri' },
+  booked: { en: 'Visit booked', it: 'Visita prenotata' },
+  again: { en: 'Start again', it: 'Ricomincia' },
+  back: { en: 'Back', it: 'Indietro' },
+  disc: { en: 'Illustrative flow · fictional places', it: 'Flusso illustrativo · luoghi fittizi' },
+  progress: { en: 'Booking steps', it: 'Passaggi della prenotazione' },
+  map: { en: 'Stylized map of Turin with doctors', it: 'Mappa stilizzata di Torino con i medici' },
+};
+const questions = [
+  {
+    q: { en: 'What kind of visit?', it: 'Che tipo di visita?' },
+    opts: [
+      { en: 'General check-up', it: 'Visita generale' },
+      { en: 'Specialist', it: 'Specialistica' },
+      { en: 'Follow-up', it: 'Controllo' },
+    ],
+  },
+  {
+    q: { en: 'When works for you?', it: 'Quando ti va bene?' },
+    opts: [
+      { en: 'Today', it: 'Oggi' },
+      { en: 'This week', it: 'Questa settimana' },
+      { en: 'Anytime', it: 'Quando capita' },
+    ],
+  },
+  {
+    q: { en: 'How far can you go?', it: 'Quanto puoi spostarti?' },
+    opts: [{ en: '1 km', it: '1 km' }, { en: '3 km', it: '3 km' }, { en: '5 km +', it: '5 km +' }],
+  },
+];
+const filters = [
+  { id: 'open', label: { en: 'Open now', it: 'Aperto ora' } },
+  { id: 'access', label: { en: 'Step-free', it: 'Senza barriere' } },
+  { id: 'near', label: { en: '≤ 2 km', it: '≤ 2 km' } },
+];
+// x/y in % of the map box
+const pins = [
+  { id: 'a', name: 'Studio Centro', x: 42, y: 40, km: 0.6, open: true, access: true, slot: { en: 'Thu · 10:30', it: 'gio · 10:30' } },
+  { id: 'b', name: 'Ambulatorio Crocetta', x: 30, y: 72, km: 2.4, open: true, access: false, slot: { en: 'Fri · 09:15', it: 'ven · 09:15' } },
+  { id: 'c', name: 'Studio San Salvario', x: 62, y: 66, km: 1.3, open: false, access: true, slot: { en: 'Mon · 16:00', it: 'lun · 16:00' } },
+  { id: 'd', name: 'Poliambulatorio Aurora', x: 52, y: 16, km: 1.8, open: true, access: true, slot: { en: 'Thu · 15:45', it: 'gio · 15:45' } },
+];
+const data = {
+  questions: questions.map((q) => ({ q: q.q[lang], opts: q.opts.map((o) => o[lang]) })),
+  pins: pins.map((p) => ({ ...p, slot: p.slot[lang] })),
+};
+---
+<div class="md" data-demo="medcheck" data-md={JSON.stringify(data)}>
+  <div class="md-device">
+    <ol class="md-steps" aria-label={L.progress[lang]}>
+      {L.steps.map((s, k) => (
+        <li class="md-step" data-step-i={k} aria-current={k === 0 ? 'step' : undefined}>
+          <span class="md-step-n" aria-hidden="true">{k + 1}</span>
+          <span class="meta md-step-l">{s[lang]}</span>
+        </li>
+      ))}
+    </ol>
+
+    <!-- stage 1: questionnaire -->
+    <div class="md-stage" data-stage="0" aria-label={L.steps[0][lang]} role="group">
+      <div class="md-qhead">
+        <p class="meta md-qn">{L.question[lang]} <span data-md-qn>1</span>/3</p>
+        <div class="md-bar" aria-hidden="true"><span data-md-bar style="--p:0.333"></span></div>
+      </div>
+      <p class="md-q" data-md-q>{data.questions[0].q}</p>
+      <div class="md-opts" data-md-opts>
+        {data.questions[0].opts.map((o) => <button type="button" class="md-opt">{o}<span aria-hidden="true">→</span></button>)}
+      </div>
+    </div>
+
+    <!-- stage 2: map -->
+    <div class="md-stage" data-stage="1" aria-label={L.steps[1][lang]} hidden role="group">
+      <div class="md-filters" role="group" aria-label={L.filters[lang]}>
+        {filters.map((f) => (
+          <button type="button" class="md-filter meta" data-filter={f.id} aria-pressed="false">{f.label[lang]}</button>
+        ))}
+      </div>
+      <div class="md-map">
+        <svg viewBox="0 0 320 220" preserveAspectRatio="xMidYMid slice" role="img" aria-label={L.map[lang]}>
+          <rect width="320" height="220" class="md-land" />
+          <!-- Valentino-ish park + the Po river -->
+          <path class="md-park" d="M224 120 C 240 128 250 160 246 220 L 214 220 C 212 180 206 140 224 120 Z" />
+          <path class="md-river" d="M300 -10 C 270 40 262 70 256 110 C 250 150 262 190 238 230" />
+          <!-- the Turin grid, slightly rotated -->
+          <g class="md-grid" transform="rotate(-8 160 110)">
+            {Array.from({ length: 13 }, (_, k) => <line x1={-40 + k * 30} y1="-40" x2={-40 + k * 30} y2="260" />)}
+            {Array.from({ length: 10 }, (_, k) => <line x1="-40" y1={-30 + k * 30} x2="300" y2={-30 + k * 30} />)}
+          </g>
+          <g class="md-avenue" transform="rotate(-8 160 110)">
+            <line x1="-40" y1="90" x2="300" y2="90" />
+            <line x1="140" y1="-40" x2="140" y2="260" />
+          </g>
+          <path class="md-avenue md-diag" d="M-10 200 L 200 40" />
+          <circle class="md-you" cx="150" cy="104" r="5" />
+          <circle class="md-you-ring" cx="150" cy="104" r="12" />
+        </svg>
+        {pins.map((p) => (
+          <button
+            type="button"
+            class="md-pin"
+            data-pin={p.id}
+            style={`left:${p.x}%;top:${p.y}%`}
+            aria-label={`${p.name}, ${p.km} km`}
+          >
+            <span class="md-pin-shape" aria-hidden="true"></span>
+            <span class="md-pin-tip meta" aria-hidden="true">{p.name.split(' ').slice(-1)[0]}</span>
+          </button>
+        ))}
+      </div>
+      <p class="md-hint meta">{L.pickPin[lang]}</p>
+    </div>
+
+    <!-- stage 3: confirmation -->
+    <div class="md-stage md-done" data-stage="2" aria-label={L.steps[2][lang]} hidden role="group">
+      <svg class="md-check" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="29" pathLength="1" />
+        <path d="M20 33 l8 8 l16 -18" pathLength="1" />
+      </svg>
+      <p class="md-done-t">{L.booked[lang]}</p>
+      <p class="md-done-d" data-md-done>Studio Centro · Thu · 10:30</p>
+      <button type="button" class="md-again meta" data-md-again>{L.again[lang]}</button>
+    </div>
+
+    <p class="sr-only" aria-live="polite" data-md-live></p>
+  </div>
+  <p class="meta md-disc">{L.disc[lang]}</p>
+</div>
+
+<style>
+  .md {
+    width: min(100%, 380px);
+    display: grid;
+    gap: 12px;
+  }
+  .md-device {
+    position: relative;
+    height: 440px;
+    padding: 18px;
+    border-radius: 30px;
+    border: 1px solid var(--line-strong);
+    background:
+      radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
+      rgb(11 11 16 / 0.95);
+    box-shadow: 0 40px 80px -40px rgb(0 0 0 / 0.9);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .md-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    counter-reset: s;
+  }
+  .md-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 2px solid var(--line-strong);
+    color: var(--fg-3);
+    transition: color 0.4s, border-color 0.4s;
+    min-width: 0;
+  }
+  .md-step-n {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+  }
+  .md-step-l { font-size: 0.62rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .md-step.is-done { border-color: color-mix(in srgb, var(--accent) 50%, transparent); color: var(--fg-2); }
+  .md-step[aria-current='step'] { border-color: var(--accent); color: var(--fg); }
+
+  .md-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: 18px;
+    min-height: 0;
+    animation: md-in 0.6s var(--ease-out);
+  }
+  .md-stage[hidden] { display: none; }
+
+  .md-qhead { display: flex; align-items: center; gap: 12px; }
+  .md-qn { color: var(--fg-2); white-space: nowrap; }
+  .md-bar { flex: 1; height: 2px; background: var(--line); }
+  .md-bar span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: left;
+    transform: scaleX(var(--p));
+    transition: transform 0.6s var(--ease-out);
+  }
+  .md-q {
+    margin-top: 22px;
+    font-size: 1.7rem;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    font-weight: 500;
+  }
+  .md-opts {
+    margin-top: auto;
+    display: grid;
+    gap: 8px;
+  }
+  .md-opt {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 48px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--line-strong);
+    text-align: left;
+    color: var(--fg);
+    transition: background-color 0.3s var(--ease-out), border-color 0.3s var(--ease-out);
+  }
+  .md-opt span { color: var(--fg-3); transition: transform 0.3s var(--ease-out), color 0.3s; }
+  .md-opt:hover, .md-opt.is-picked { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .md-opt:hover span, .md-opt.is-picked span { color: var(--accent); transform: translateX(4px); }
+
+  .md-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+  .md-filter {
+    min-height: 44px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    color: var(--fg-2);
+    font-size: 0.64rem;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  }
+  .md-filter[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); color: var(--ink-0); }
+
+  .md-map {
+    position: relative;
+    flex: 1;
+    margin-top: 12px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    min-height: 0;
+  }
+  .md-map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .md-land { fill: #0d0d14; }
+  .md-grid line { stroke: rgb(255 255 255 / 0.07); stroke-width: 1; }
+  .md-avenue line, .md-avenue.md-diag { stroke: rgb(255 255 255 / 0.16); stroke-width: 3; fill: none; }
+  .md-river { fill: none; stroke: color-mix(in srgb, var(--accent) 45%, transparent); stroke-width: 9; stroke-linecap: round; }
+  .md-park { fill: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .md-you { fill: var(--fg); }
+  .md-you-ring { fill: none; stroke: var(--fg); stroke-opacity: 0.4; transform-origin: 150px 104px; animation: md-ring 2s ease-out infinite; }
+  .md.is-paused .md-you-ring { animation-play-state: paused; }
+
+  .md-pin {
+    position: absolute;
+    width: 44px;
+    height: 48px;
+    margin: -44px 0 0 -22px;
+    display: flex;
+    justify-content: center;
+    transition: opacity 0.4s var(--ease-out), transform 0.5s var(--ease-out);
+    transform-origin: 50% 100%;
+  }
+  .md-pin-shape {
+    position: relative;
+    margin-top: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    background: var(--ink-3);
+    border: 2px solid var(--accent);
+    transition: background-color 0.3s;
+  }
+  .md-pin-shape::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .md-pin-tip {
+    position: absolute;
+    top: -16px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: var(--ink-0);
+    color: var(--fg-2);
+    font-size: 0.56rem;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.3s, transform 0.3s var(--ease-out);
+    pointer-events: none;
+  }
+  .md-pin:hover .md-pin-tip, .md-pin:focus-visible .md-pin-tip, .md-pin.is-picked .md-pin-tip { opacity: 1; transform: none; }
+  .md-pin.is-picked { transform: scale(1.25); z-index: 2; }
+  .md-pin.is-picked .md-pin-shape { background: var(--accent); }
+  .md-pin.is-off { opacity: 0.15; transform: scale(0.7); pointer-events: none; }
+  .md-pin:focus-visible { outline-color: var(--accent); }
+  .md-hint { margin-top: 10px; color: var(--fg-3); font-size: 0.64rem; }
+
+  .md-done { align-items: center; justify-content: center; text-align: center; gap: 10px; }
+  .md-check { width: 76px; height: 76px; }
+  .md-check circle, .md-check path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: md-draw 0.8s var(--ease-out) forwards;
+  }
+  .md-check path { animation-delay: 0.35s; }
+  .md-done-t { font-size: 1.7rem; letter-spacing: -0.03em; font-weight: 500; }
+  .md-done-d { color: var(--fg-2); }
+  .md-again {
+    margin-top: 12px;
+    min-height: 44px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    color: var(--fg);
+  }
+  .md-again:hover { border-color: var(--accent); }
+  .md-disc { font-size: 0.64rem; color: var(--fg-3); }
+  .md button:focus-visible { outline-color: var(--accent); }
+
+  @keyframes md-in { from { opacity: 0; transform: translateY(10px); } }
+  @keyframes md-draw { to { stroke-dashoffset: 0; } }
+  @keyframes md-ring { from { transform: scale(0.5); opacity: 1; } to { transform: scale(1.8); opacity: 0; } }
+
+  @media (min-width: 1024px) {
+    .md { width: min(100%, 390px); }
+    .md-device { height: clamp(400px, 58svh, 500px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .md-check circle, .md-check path { animation: none; stroke-dashoffset: 0; }
+    .md-you-ring { animation: none; }
+    .md-stage { animation: none; }
+  }
+</style>
+
+<script>
+  import { reducedMotion, visibilityGate, whenReady } from './runtime';
+
+  type Pin = { id: string; name: string; km: number; open: boolean; access: boolean; slot: string };
+  type Data = { questions: { q: string; opts: string[] }[]; pins: Pin[] };
+
+  function initMed(root: HTMLElement) {
+    const data: Data = JSON.parse(root.dataset.md || '{}');
+    const stages = Array.from(root.querySelectorAll<HTMLElement>('.md-stage'));
+    const steps = Array.from(root.querySelectorAll<HTMLElement>('.md-step'));
+    const qn = root.querySelector<HTMLElement>('[data-md-qn]')!;
+    const bar = root.querySelector<HTMLElement>('[data-md-bar]')!;
+    const qEl = root.querySelector<HTMLElement>('[data-md-q]')!;
+    const optsWrap = root.querySelector<HTMLElement>('[data-md-opts]')!;
+    const opts = Array.from(optsWrap.querySelectorAll<HTMLButtonElement>('.md-opt'));
+    const filters = Array.from(root.querySelectorAll<HTMLButtonElement>('.md-filter'));
+    const pins = Array.from(root.querySelectorAll<HTMLButtonElement>('.md-pin'));
+    const done = root.querySelector<HTMLElement>('[data-md-done]')!;
+    const again = root.querySelector<HTMLButtonElement>('[data-md-again]')!;
+    const live = root.querySelector<HTMLElement>('[data-md-live]')!;
+    const reduce = reducedMotion();
+
+    let stage = 0;
+    let q = 0;
+    let lastUser = -Infinity;
+    let busy = false;
+
+    const say = (t: string) => {
+      if (performance.now() - lastUser < 15000) live.textContent = t;
+    };
+
+    const setStage = (s: number) => {
+      stage = s;
+      stages.forEach((el, k) => (el.hidden = k !== s));
+      steps.forEach((el, k) => {
+        el.classList.toggle('is-done', k < s);
+        if (k === s) el.setAttribute('aria-current', 'step');
+        else el.removeAttribute('aria-current');
+      });
+      say(stages[s].getAttribute('aria-label') || '');
+    };
+
+    const setQuestion = (k: number) => {
+      q = k;
+      const d = data.questions[k];
+      qn.textContent = String(k + 1);
+      bar.style.setProperty('--p', String((k + 1) / data.questions.length));
+      qEl.textContent = d.q;
+      opts.forEach((b, i) => {
+        b.firstChild!.textContent = d.opts[i];
+        b.classList.remove('is-picked');
+      });
+      say(d.q);
+    };
+
+    const choose = (i: number) => {
+      if (busy) return;
+      busy = true;
+      opts[i].classList.add('is-picked');
+      window.setTimeout(
+        () => {
+          busy = false;
+          if (q < data.questions.length - 1) setQuestion(q + 1);
+          else setStage(1);
+        },
+        reduce ? 0 : 420,
+      );
+    };
+
+    const applyFilters = () => {
+      const on = new Set(filters.filter((f) => f.getAttribute('aria-pressed') === 'true').map((f) => f.dataset.filter));
+      pins.forEach((el) => {
+        const p = data.pins.find((x) => x.id === el.dataset.pin)!;
+        const ok = (!on.has('open') || p.open) && (!on.has('access') || p.access) && (!on.has('near') || p.km <= 2);
+        el.classList.toggle('is-off', !ok);
+        el.disabled = !ok;
+      });
+    };
+
+    const pick = (id: string) => {
+      const p = data.pins.find((x) => x.id === id);
+      if (!p) return;
+      pins.forEach((el) => el.classList.toggle('is-picked', el.dataset.pin === id));
+      window.setTimeout(
+        () => {
+          done.textContent = `${p.name} · ${p.slot}`;
+          setStage(2);
+          say(`${p.name} · ${p.slot}`);
+        },
+        reduce ? 0 : 520,
+      );
+    };
+
+    const reset = () => {
+      filters.forEach((f) => f.setAttribute('aria-pressed', 'false'));
+      pins.forEach((el) => el.classList.remove('is-picked'));
+      applyFilters();
+      setQuestion(0);
+      setStage(0);
+    };
+
+    // ---- user input (pauses the autoplay for a while) ----
+    const user = () => (lastUser = performance.now());
+    opts.forEach((b, i) => b.addEventListener('click', () => (user(), choose(i))));
+    filters.forEach((f) =>
+      f.addEventListener('click', () => {
+        user();
+        f.setAttribute('aria-pressed', f.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+        applyFilters();
+      }),
+    );
+    pins.forEach((el) => el.addEventListener('click', () => (user(), pick(el.dataset.pin!))));
+    again.addEventListener('click', () => {
+      user();
+      reset();
+      root.querySelector<HTMLButtonElement>('.md-opt')?.focus();
+    });
+
+    if (reduce) {
+      root.classList.add('is-paused');
+      return;
+    }
+
+    // ---- autoplay script ----
+    let timer = 0;
+    let beat = 0;
+    const tick = () => {
+      timer = window.setTimeout(tick, 1500);
+      if (performance.now() - lastUser < 9000 || busy) return;
+      beat++;
+      if (stage === 0) choose([0, 1, 0][q] ?? 0);
+      else if (stage === 1) {
+        const f = filters.find((x) => x.dataset.filter === 'open');
+        if (f && f.getAttribute('aria-pressed') !== 'true') {
+          f.setAttribute('aria-pressed', 'true');
+          applyFilters();
+        } else pick(beat % 2 ? 'a' : 'd');
+      } else if (stage === 2) {
+        // hold the confirmation a bit, then loop
+        if (beat % 3 === 0) reset();
+      }
+    };
+
+    whenReady(() =>
+      visibilityGate(root, (on) => {
+        root.classList.toggle('is-paused', !on);
+        window.clearTimeout(timer);
+        if (on) timer = window.setTimeout(tick, 1200);
+      }),
+    );
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="medcheck"]').forEach(initMed);
+</script>

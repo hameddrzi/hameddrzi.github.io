@@ -1,0 +1,30 @@
+---
+// OWNER: lead. Section order of the page. Do not edit without the lead.
+import Layout from '../layouts/Layout.astro';
+import Preloader from './Preloader.astro';
+import Nav from './Nav.astro';
+import Cursor from './Cursor.astro';
+import Hero from './Hero.astro';
+import About from './About.astro';
+import Experience from './Experience.astro';
+import Projects from './Projects.astro';
+import Skills from './Skills.astro';
+import Contact from './Contact.astro';
+import { profile, tr, type Lang } from '../data/cv';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const title = `Hamed Darzi — ${tr(profile.role, lang)} · ${tr(profile.focus, lang)}`;
+---
+<Layout lang={lang} title={title} description={tr(profile.summary, lang)}>
+  <Preloader lang={lang} />
+  <Cursor lang={lang} />
+  <Nav lang={lang} />
+  <main id="main">
+    <Hero lang={lang} />
+    <About lang={lang} />
+    <Experience lang={lang} />
+    <Projects lang={lang} />
+    <Skills lang={lang} />
+    <Contact lang={lang} />
+  </main>
+</Layout>

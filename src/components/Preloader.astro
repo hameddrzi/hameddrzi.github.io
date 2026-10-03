@@ -1,0 +1,89 @@
+---
+// OWNER: Agent "shell". Markup + styles only; logic in src/scripts/fx/preloader.ts (driven by initApp).
+import { profile, tr, type Lang } from '../data/cv';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const name = profile.name.toUpperCase();
+const words = name.split(' ');
+---
+<div class="pl" data-preloader role="status" aria-live="polite" aria-label={lang === 'it' ? 'Caricamento' : 'Loading'}>
+  <div class="pl__half pl__half--top" data-pl-top></div>
+  <div class="pl__half pl__half--bottom" data-pl-bottom></div>
+  <div class="pl__content" data-pl-content>
+    <div class="pl__row pl__row--top meta" data-pl-fade>
+      <span>HD — Portfolio</span>
+      <span>{tr(profile.location, lang)}</span>
+    </div>
+    <p class="pl__name" aria-hidden="true">
+      {words.map((w, wi) => (
+        <span class="pl__word">
+          {Array.from(w).map((c) => <span class="pl__mask"><span class="pl__char" data-pl-char={c}>{c}</span></span>)}
+          {wi < words.length - 1 && <span class="pl__space"> </span>}
+        </span>
+      ))}
+    </p>
+    <span class="pl__line" data-pl-line></span>
+    <div class="pl__row pl__row--bottom" data-pl-fade>
+      <span class="meta">{tr(profile.role, lang)} — {tr(profile.focus, lang)}</span>
+      <span class="pl__count" data-pl-count>000</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .pl {
+    position: fixed; inset: 0; z-index: var(--z-loader);
+    pointer-events: auto;
+    /* failsafe: if JS never takes over, get out of the way */
+    animation: pl-failsafe 0.01s linear 10s forwards;
+  }
+  @keyframes pl-failsafe { to { visibility: hidden; opacity: 0; pointer-events: none; } }
+  .pl__half {
+    position: absolute; left: 0; right: 0; height: 50.5%;
+    background: var(--ink-0);
+  }
+  .pl__half--top { top: 0; }
+  .pl__half--bottom { bottom: 0; }
+  .pl__half--bottom::before {
+    /* faint grain so the panel reads as material, not a flat fill */
+    content: ''; position: absolute; inset: 0; opacity: 0.5;
+    background: radial-gradient(120% 80% at 50% 0%, var(--ink-1), transparent 70%);
+  }
+  .pl__half--top::before {
+    content: ''; position: absolute; inset: 0; opacity: 0.5;
+    background: radial-gradient(120% 80% at 50% 100%, var(--ink-1), transparent 70%);
+  }
+  .pl__content {
+    position: absolute; inset: 0; padding: var(--gutter);
+    display: grid; grid-template-rows: auto 1fr auto; align-items: center;
+  }
+  .pl__row { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+  .pl__row--top { align-self: start; }
+  .pl__name {
+    position: absolute; left: 0; right: 0; top: 50%;
+    transform: translateY(calc(-100% - 0.18em));
+    text-align: center;
+    font-weight: 700; letter-spacing: -0.045em; line-height: 0.9;
+    font-size: clamp(2.4rem, 9vw, 8.5rem);
+    color: var(--fg);
+    white-space: nowrap;
+  }
+  .pl__word { display: inline-block; }
+  .pl__space { display: inline-block; width: 0.28em; }
+  .pl__mask { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.04em; }
+  .pl__char { display: inline-block; min-width: 0.2em; }
+  .pl__line {
+    position: absolute; left: 0; right: 0; top: 50%; height: 1px; margin-top: -0.5px;
+    background: var(--signal); transform-origin: 0 50%; transform: scaleX(0);
+    box-shadow: 0 0 12px rgba(215, 255, 58, 0.55);
+  }
+  .pl__row--bottom { align-self: end; }
+  .pl__count {
+    font-family: var(--font-mono); font-weight: 400; line-height: 0.8;
+    font-size: clamp(3rem, 11vw, 9rem); letter-spacing: -0.06em; color: var(--fg);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 520px) {
+    .pl__row--bottom { flex-direction: column-reverse; align-items: flex-start; }
+  }
+</style>

@@ -1,141 +1,300 @@
 ---
-import { profile } from '../data/cv';
-
-const items = [
-  { href: '#about', label: 'About' },
-  { href: '#experience', label: 'Experience' },
-  { href: '#projects', label: 'Projects' },
-  { href: '#skills', label: 'Skills' },
-  { href: '#contact', label: 'Contact' },
+// OWNER: Agent "shell".
+import { profile, ui, tr, type Lang } from '../data/cv';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const links = [
+  { href: '#about', label: tr(ui.nav.about, lang) },
+  { href: '#experience', label: tr(ui.nav.work, lang) },
+  { href: '#projects', label: tr(ui.nav.projects, lang) },
+  { href: '#skills', label: tr(ui.nav.skills, lang) },
+  { href: '#contact', label: tr(ui.nav.contact, lang) },
 ];
+const t = {
+  menu: lang === 'it' ? 'Menu' : 'Menu',
+  close: lang === 'it' ? 'Chiudi' : 'Close',
+  turin: lang === 'it' ? 'Torino' : 'Turin',
+  primary: lang === 'it' ? 'Navigazione principale' : 'Main navigation',
+  home: lang === 'it' ? 'Hamed Darzi, torna su' : 'Hamed Darzi, back to top',
+  lang: lang === 'it' ? 'Lingua' : 'Language',
+};
 ---
+<header class="nav" data-nav>
+  <div class="nav__progress" aria-hidden="true"><span data-nav-progress></span></div>
+  <div class="nav__bar wrap" data-nav-bar>
+    <a href="#top" class="nav__logo" aria-label={t.home} data-cursor-none>
+      <span class="nav__mono" data-scramble aria-hidden="true">HD</span>
+      <span class="nav__logo-name" aria-hidden="true">Hamed Darzi</span>
+    </a>
+    <div class="nav__right">
+      <p class="nav__clock meta" aria-label={`${t.turin}, Europe/Rome`}>
+        <span class="nav__clock-dot" aria-hidden="true"></span>
+        <span class="nav__clock-city">{t.turin}</span>
+        <time data-clock>--:--</time>
+      </p>
+      <nav class="nav__lang meta" aria-label={t.lang}>
+        <a href="/" hreflang="en" lang="en" aria-current={lang === 'en' ? 'true' : undefined}>EN</a>
+        <span aria-hidden="true">/</span>
+        <a href="/it/" hreflang="it" lang="it" aria-current={lang === 'it' ? 'true' : undefined}>IT</a>
+      </nav>
+      <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="menu" data-menu-toggle data-magnetic="0.3">
+        <span class="nav__toggle-txt" aria-hidden="true">
+          <span data-label-open>{t.menu}</span>
+          <span data-label-close>{t.close}</span>
+        </span>
+        <span class="sr-only" data-toggle-sr>{t.menu}</span>
+        <span class="nav__burger" aria-hidden="true"><i></i><i></i></span>
+      </button>
+    </div>
+  </div>
 
-<nav class="nav">
-  <a href="#top" class="nav-brand" aria-label="Home">
-    <span class="dot"></span>
-    <span class="nav-name">{profile.firstName}<b>.</b>{profile.lastName.slice(0,3)}</span>
-  </a>
-
-  <ul class="nav-links">
-    {items.map((it, i) => (
-      <li><a href={it.href} data-idx={i}><span class="idx">0{i+1}</span> {it.label}</a></li>
-    ))}
-  </ul>
-
-  <a href={profile.cvPdf} target="_blank" class="nav-cta">
-    CV <span class="arrow">→</span>
-  </a>
-</nav>
+  <div class="menu" id="menu" data-menu role="dialog" aria-modal="true" aria-label={t.primary} hidden>
+    <div class="menu__bg" data-menu-bg></div>
+    <div class="menu__inner wrap" data-lenis-prevent>
+      <nav class="menu__nav" aria-label={t.primary}>
+        <ol class="menu__list">
+          {links.map((l, i) => (
+            <li class="menu__item">
+              <a class="menu__link" href={l.href} data-menu-link>
+                <span class="menu__mask"><span class="menu__label" data-menu-label>
+                  <span class="menu__idx serif" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="menu__text">{l.label}</span>
+                </span></span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+      <aside class="menu__aside" data-menu-aside>
+        <div class="menu__group">
+          <p class="meta">Email</p>
+          <a class="menu__contact" href={`mailto:${profile.email}`}>{profile.email}</a>
+        </div>
+        <div class="menu__group">
+          <p class="meta">{lang === 'it' ? 'Social' : 'Elsewhere'}</p>
+          <a class="menu__contact" href={profile.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a>
+          <a class="menu__contact" href={profile.github} target="_blank" rel="noopener">GitHub ↗</a>
+        </div>
+        <div class="menu__group">
+          <p class="meta">CV</p>
+          <a class="menu__contact" href={profile.cvPdf[lang]} download>{tr(ui.downloadCv, lang)} ↓</a>
+        </div>
+        <div class="menu__group menu__group--foot meta">
+          <span>{tr(profile.location, lang)}</span>
+          <span><time data-clock="hms">--:--:--</time></span>
+        </div>
+      </aside>
+    </div>
+  </div>
+</header>
 
 <style>
-  .nav {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    padding: 18px 28px;
-    background: rgba(8, 8, 12, 0.55);
-    backdrop-filter: blur(18px) saturate(1.2);
-    -webkit-backdrop-filter: blur(18px) saturate(1.2);
-    border-bottom: 1px solid var(--line);
+  .nav { position: fixed; inset: 0 0 auto 0; z-index: var(--z-nav); pointer-events: none; }
+  .nav__progress { position: absolute; left: 0; right: 0; top: 0; height: 2px; z-index: 3; }
+  .nav__progress span {
+    display: block; height: 100%; background: var(--signal); transform-origin: 0 50%; transform: scaleX(0);
+    box-shadow: 0 0 10px rgba(215, 255, 58, 0.5);
   }
-
-  .nav-brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    font-size: 0.95rem;
-    transition: opacity 0.3s;
+  .nav__bar {
+    position: relative; z-index: 2; pointer-events: auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding-block: clamp(14px, 2vw, 24px);
+    transition: transform 0.7s var(--ease-out);
   }
-
-  .nav-brand:hover { opacity: 0.8; }
-
-  .nav-brand .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--grad);
-    box-shadow: 0 0 0 3px rgba(15, 191, 250, 0.12), 0 0 24px rgba(177, 105, 219, 0.6);
-    animation: pulse 2.4s ease-in-out infinite;
+  .nav__bar::before {
+    /* soft scrim so the bar stays legible over particles and content */
+    content: ''; position: absolute; top: 0; bottom: -40px; left: calc(50% - 50vw); right: calc(50% - 50vw); z-index: -1; pointer-events: none;
+    background: linear-gradient(to bottom, rgba(5, 5, 7, 0.75), rgba(5, 5, 7, 0));
+    opacity: 0; transition: opacity 0.5s;
   }
+  .nav:global(.is-scrolled) .nav__bar::before { opacity: 1; }
+  .nav:global(.is-hidden) .nav__bar { transform: translateY(-110%); }
+  .nav:global(.is-open) .nav__bar { transform: none; }
+  .nav:global(.is-open) .nav__bar::before { opacity: 0; }
 
-  .nav-brand b {
-    color: var(--grad-1);
-    font-weight: 700;
+  .nav__logo { display: inline-flex; align-items: baseline; gap: 12px; }
+  .nav__mono {
+    font-family: var(--font-mono); font-weight: 500; font-size: 0.95rem; letter-spacing: 0.04em;
+    display: inline-grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line-strong); border-radius: 50%;
+    transition: border-color 0.4s, background-color 0.4s, color 0.4s;
   }
+  .nav__logo:hover .nav__mono, .nav__logo:focus-visible .nav__mono { border-color: var(--signal); background: var(--signal); color: var(--signal-ink); }
+  .nav__logo-name { display: none; font-weight: 600; letter-spacing: -0.02em; }
+  @media (min-width: 900px) { .nav__logo-name { display: inline; } }
 
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
-  }
+  .nav__right { display: flex; align-items: center; gap: clamp(12px, 2.4vw, 36px); }
+  .nav__clock { display: none; align-items: center; gap: 8px; color: var(--fg-2); }
+  .nav__clock time { color: var(--fg); font-variant-numeric: tabular-nums; }
+  .nav__clock-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--signal); animation: navblink 2s steps(1) infinite; }
+  @keyframes navblink { 50% { opacity: 0.2; } }
+  @media (min-width: 720px) { .nav__clock { display: inline-flex; } }
 
-  .nav-links {
-    display: flex;
-    list-style: none;
-    gap: 4px;
-  }
+  .nav__lang { display: inline-flex; align-items: center; gap: 0; color: var(--fg-3); }
+  .nav__lang a { color: var(--fg-3); transition: color 0.3s; display: inline-grid; place-items: center; min-width: 40px; min-height: 44px; }
+  .nav__lang a:hover { color: var(--fg); }
+  .nav__lang a[aria-current='true'] { color: var(--signal); }
 
-  .nav-links a {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 6px;
-    padding: 8px 14px;
-    border-radius: 999px;
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: var(--muted);
-    transition: color 0.3s, background 0.3s;
+  .nav__toggle {
+    display: inline-flex; align-items: center; gap: 12px;
+    height: 48px; padding: 0 9px 0 18px; border-radius: 999px; border: 1px solid var(--line-strong);
+    font-family: var(--font-mono); font-size: var(--fs-meta); letter-spacing: 0.1em; text-transform: uppercase;
+    background: rgba(5, 5, 7, 0.35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    transition: border-color 0.4s, background-color 0.4s, color 0.4s;
   }
+  .nav__toggle:hover { border-color: var(--signal); }
+  .nav__toggle-txt { position: relative; display: inline-grid; overflow: hidden; height: 1.2em; line-height: 1.2em; }
+  .nav__toggle-txt > span { grid-area: 1 / 1; transition: transform 0.6s var(--ease-out); }
+  .nav__toggle-txt [data-label-close] { transform: translateY(110%); }
+  .nav:global(.is-open) .nav__toggle-txt [data-label-open] { transform: translateY(-110%); }
+  .nav:global(.is-open) .nav__toggle-txt [data-label-close] { transform: none; }
+  .nav__burger { position: relative; width: 28px; height: 28px; border-radius: 50%; background: var(--fg); transition: background-color 0.4s, transform 0.6s var(--ease-out); }
+  .nav__burger i { position: absolute; left: 8px; right: 8px; height: 1.5px; background: var(--ink-0); transition: transform 0.6s var(--ease-out); }
+  .nav__burger i:first-child { top: 11px; }
+  .nav__burger i:last-child { top: 16px; }
+  .nav:global(.is-open) .nav__burger { background: var(--signal); transform: rotate(90deg); }
+  .nav:global(.is-open) .nav__burger i:first-child { transform: translateY(2.5px) rotate(45deg); }
+  .nav:global(.is-open) .nav__burger i:last-child { transform: translateY(-2.5px) rotate(-45deg); }
 
-  .nav-links a:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.06);
+  /* ---------- overlay ---------- */
+  .menu { position: fixed; inset: 0; z-index: 1; pointer-events: auto; }
+  .menu[hidden] { display: none; }
+  .menu__bg {
+    position: absolute; inset: 0; background: var(--ink-0);
+    background-image: radial-gradient(80% 60% at 85% 100%, rgba(215, 255, 58, 0.07), transparent 60%), radial-gradient(60% 50% at 0% 0%, var(--ink-2), transparent 70%);
   }
+  .menu__inner {
+    position: relative; height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+    display: grid; grid-template-rows: 1fr auto; gap: 40px;
+    padding-top: calc(76px + 3vh); padding-bottom: 28px;
+  }
+  @media (min-width: 900px) {
+    .menu__inner { grid-template-columns: 1fr minmax(240px, 22%); grid-template-rows: 1fr; align-items: end; padding-bottom: 6vh; }
+  }
+  .menu__list { counter-reset: m; }
+  .menu__link {
+    display: block; font-weight: 600; letter-spacing: -0.045em; line-height: 0.92;
+    font-size: clamp(2.6rem, min(13vw, 10.5vh), 9rem);
+    transition: opacity 0.5s var(--ease-out), color 0.5s;
+  }
+  .menu__mask { display: block; overflow: hidden; padding: 0.04em 0 0.08em; }
+  .menu__label { display: inline-flex; align-items: flex-start; gap: 0.18em; transition: transform 0.7s var(--ease-out); }
+  .menu__idx {
+    font-size: 0.32em; line-height: 1; padding-top: 0.25em; color: var(--signal);
+    width: 0; overflow: hidden; opacity: 0; transition: width 0.7s var(--ease-out), opacity 0.5s;
+  }
+  .menu__list:hover .menu__link:not(:hover), .menu__list:has(.menu__link:focus-visible) .menu__link:not(:focus-visible):not(:hover) { opacity: 0.22; }
+  .menu__link:hover .menu__label, .menu__link:focus-visible .menu__label { transform: translateX(0.12em); }
+  .menu__link:hover .menu__idx, .menu__link:focus-visible .menu__idx { width: 1.2em; opacity: 1; }
+  .menu__link:hover .menu__text, .menu__link:focus-visible .menu__text { font-family: var(--font-serif); font-style: italic; font-weight: 400; letter-spacing: -0.01em; }
+  .menu__link:focus-visible { outline: none; }
+  /* touch: no hover, so the serif index is always shown */
+  @media (hover: none) { .menu__idx { width: 1.2em; opacity: 1; } }
 
-  .idx {
-    font-family: 'Source Code Pro', monospace;
-    font-size: 0.6rem;
-    opacity: 0.5;
-    letter-spacing: 0.1em;
-  }
-
-  .nav-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 16px;
-    border-radius: 999px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    background: #fff;
-    color: #111;
-    transition: transform 0.3s var(--ease-pop), box-shadow 0.3s;
-  }
-
-  .nav-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(255, 255, 255, 0.15);
-  }
-
-  .nav-cta .arrow {
-    transition: transform 0.3s var(--ease);
-  }
-
-  .nav-cta:hover .arrow {
-    transform: translateX(4px) rotate(-45deg);
-  }
-
-  @media (max-width: 820px) {
-    .nav-links { display: none; }
-    .nav { padding: 14px 18px; }
-  }
+  .menu__aside { display: grid; gap: 22px; grid-template-columns: 1fr 1fr; align-content: end; }
+  .menu__group { display: grid; gap: 0; align-content: start; }
+  .menu__group:first-child { grid-column: 1 / -1; }
+  .menu__group--foot { grid-column: 1 / -1; display: flex; justify-content: space-between; padding-top: 18px; border-top: 1px solid var(--line); }
+  .menu__contact { display: inline-flex; align-items: center; min-height: 44px; color: var(--fg); width: fit-content; background: linear-gradient(var(--signal), var(--signal)) 0 100% / 0 1px no-repeat; transition: background-size 0.5s var(--ease-out), color 0.3s; padding-bottom: 2px; overflow-wrap: anywhere; }
+  .menu__contact:hover, .menu__contact:focus-visible { background-size: 100% 1px; color: var(--signal); }
+  @media (min-width: 900px) { .menu__aside { grid-template-columns: 1fr; } }
 </style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+  const toggle = nav?.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = nav?.querySelector<HTMLElement>('[data-menu]');
+  const progress = nav?.querySelector<HTMLElement>('[data-nav-progress]');
+
+  if (nav && toggle && menu) {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const bg = menu.querySelector<HTMLElement>('[data-menu-bg]')!;
+    const labels = Array.from(menu.querySelectorAll<HTMLElement>('[data-menu-label]'));
+    const aside = menu.querySelector<HTMLElement>('[data-menu-aside]')!;
+    const sr = toggle.querySelector<HTMLElement>('[data-toggle-sr]');
+    const openTxt = toggle.querySelector('[data-label-open]')?.textContent || 'Menu';
+    const closeTxt = toggle.querySelector('[data-label-close]')?.textContent || 'Close';
+    let open = false;
+    let lastFocus: HTMLElement | null = null;
+    let tl: gsap.core.Timeline | null = null;
+
+    const focusables = () => [toggle, ...Array.from(menu.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'))];
+    const outside = () => Array.from(document.querySelectorAll<HTMLElement>('body > *:not(header):not(script):not(canvas), [data-nav-bar] > :first-child'));
+
+    const setOpen = (v: boolean, opts: { restoreFocus?: boolean } = {}) => {
+      if (v === open) return;
+      open = v;
+      toggle.setAttribute('aria-expanded', String(v));
+      if (sr) sr.textContent = v ? closeTxt : openTxt;
+      nav.classList.toggle('is-open', v);
+      outside().forEach((el) => { if (v) el.setAttribute('inert', ''); else el.removeAttribute('inert'); });
+      tl?.kill();
+      if (v) {
+        lastFocus = document.activeElement as HTMLElement | null;
+        menu.hidden = false;
+        (window as any).__lenis?.stop();
+        document.documentElement.classList.add('menu-open');
+        if (reduced) gsap.set([bg, labels, aside], { clearProps: 'all' });
+        else {
+          tl = gsap.timeline()
+            .fromTo(bg, { clipPath: 'inset(0% 0% 100% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'expo.inOut' })
+            .fromTo(labels, { yPercent: 115, rotate: 3 }, { yPercent: 0, rotate: 0, duration: 1.1, ease: 'expo.out', stagger: 0.07 }, '-=0.45')
+            .fromTo(aside, { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'expo.out' }, '-=0.9');
+        }
+        requestAnimationFrame(() => menu.querySelector<HTMLElement>('[data-menu-link]')?.focus({ preventScroll: true }));
+      } else {
+        document.documentElement.classList.remove('menu-open');
+        const done = () => { menu.hidden = true; };
+        (window as any).__lenis?.start();
+        if (reduced) done();
+        else {
+          tl = gsap.timeline({ onComplete: done })
+            .to(labels, { yPercent: -115, duration: 0.5, ease: 'expo.in', stagger: 0.03 })
+            .to(aside, { autoAlpha: 0, duration: 0.3 }, '<')
+            .to(bg, { clipPath: 'inset(0% 0% 0% 100%)', duration: 0.7, ease: 'expo.inOut' }, '-=0.2');
+        }
+        if (opts.restoreFocus !== false) (lastFocus && document.contains(lastFocus) ? lastFocus : toggle).focus({ preventScroll: true });
+      }
+    };
+
+    toggle.addEventListener('click', () => setOpen(!open));
+    menu.querySelectorAll<HTMLAnchorElement>('[data-menu-link]').forEach((a) =>
+      a.addEventListener('click', () => setOpen(false, { restoreFocus: false })),
+    );
+    document.addEventListener('keydown', (e) => {
+      if (!open) return;
+      if (e.key === 'Escape') { e.preventDefault(); setOpen(false); return; }
+      if (e.key === 'Tab') {
+        const f = focusables().filter((el) => el.offsetParent !== null || el === toggle);
+        const first = f[0];
+        const last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        else if (!f.includes(document.activeElement as HTMLElement)) { e.preventDefault(); first.focus(); }
+      }
+    });
+
+    // hide on scroll down / show on scroll up + progress line
+    let lastY = 0;
+    ScrollTrigger.create({
+      start: 0,
+      end: 'max',
+      onUpdate: (self) => {
+        const y = self.scroll();
+        if (progress) progress.style.transform = `scaleX(${self.progress.toFixed(4)})`;
+        nav.classList.toggle('is-scrolled', y > 40);
+        if (!open) {
+          if (y > 160 && y > lastY + 4) nav.classList.add('is-hidden');
+          else if (y < lastY - 4 || y <= 160) nav.classList.remove('is-hidden');
+        }
+        lastY = y;
+      },
+    });
+    // keyboard users: reveal the bar when focus enters it
+    nav.addEventListener('focusin', () => nav.classList.remove('is-hidden'));
+  }
+
+</script>

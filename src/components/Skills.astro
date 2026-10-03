@@ -1,163 +1,518 @@
 ---
-import { skills, certifications } from '../data/cv';
+// OWNER: Agent "work". Skills index + velocity marquee + Education / Certifications / Languages.
+import { skills, experience, education, certifications, languages, ui, tr, type Lang } from '../data/cv';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+
+const L = {
+  meta: { en: '(04) — Skills', it: '(04) — Competenze' },
+  head: { en: ['The ', 'toolkit'], it: ['Gli ', 'strumenti'] },
+  hint: { en: 'Hover or focus a group', it: 'Passa sopra o seleziona un gruppo' },
+  tech: { en: 'Technologies', it: 'Tecnologie' },
+  explore: { en: 'Explore', it: 'Esplora' },
+};
+const pad = (n: number) => String(n).padStart(2, '0');
+
+// all technologies: skill items + every company stack, de-duplicated (case-insensitive)
+const seen = new Set<string>();
+const tech: string[] = [];
+[...skills.flatMap((g) => g.items), ...experience.flatMap((j) => j.stack)].forEach((t) => {
+  const k = t.toLowerCase();
+  if (!seen.has(k)) { seen.add(k); tech.push(t); }
+});
+const rowA = tech;
+const rowB = [...tech].reverse();
+const SEGS = 20;
 ---
 
-<section id="skills" class="section skills">
-  <header class="section-head">
-    <span class="eyebrow reveal">04 · Skills & Certs</span>
-    <h2 class="section-title reveal" data-delay="1">
-      Strumenti che uso per <span class="gradient-text">costruire</span>.
-    </h2>
-  </header>
+<section id="skills" data-gl="skills" data-gl-side="left" class="sk" aria-labelledby="sk-title">
+  <div class="wrap sk-top">
+    <header class="sk-head">
+      <p class="meta" data-scramble>{L.meta[lang]}</p>
+      <h2 id="sk-title" class="sk-h2" data-split>{L.head[lang][0]}<span class="serif">{L.head[lang][1]}</span></h2>
+    </header>
 
-  <div class="skills-grid">
-    {Object.entries(skills).map(([cat, items], i) => (
-      <div class="skill-card reveal" data-delay={(i + 1).toString()}>
-        <h3 class="skill-cat mono">{cat}</h3>
-        <div class="skill-items">
-          {items.map((it) => (
-            <span class="skill-pill">{it}</span>
-          ))}
-        </div>
-      </div>
-    ))}
-  </div>
-
-  <div class="certs reveal" data-delay="3">
-    <h3 class="certs-title mono">CERTIFICAZIONI</h3>
-    <ul class="certs-list">
-      {certifications.map((c) => (
-        <li>
-          <span class="cert-issuer">{c.issuer}</span>
-          <span class="cert-dot">·</span>
-          <span class="cert-name">{c.name}</span>
+    <ol class="sk-index">
+      {skills.map((g, gi) => (
+        <li class="sk-group" tabindex="0" data-cursor={L.explore[lang]} aria-label={`${tr(g.group, lang)}: ${g.items.join(', ')}`}>
+          <div class="sk-row">
+            <span class="meta sk-num" aria-hidden="true">{pad(gi + 1)}</span>
+            <h3 class="sk-name"><span class="sk-name-in">{tr(g.group, lang)}</span></h3>
+            <span class="meta sk-count" aria-hidden="true">({pad(g.items.length)})</span>
+          </div>
+          <ul class="sk-items">
+            {g.items.map((it, i) => <li class="sk-chip" style={`--i:${i}`}>{it}</li>)}
+          </ul>
         </li>
       ))}
-    </ul>
+    </ol>
+  </div>
+
+  <!-- full-bleed velocity marquee -->
+  <div class="mq" aria-label={L.tech[lang]} role="region">
+    <div class="mq-row" data-dir="-1">
+      <ul class="mq-set">
+        {rowA.map((t) => <li class="mq-item"><span>{t}</span><span class="mq-sep" aria-hidden="true"></span></li>)}
+      </ul>
+      <ul class="mq-set" aria-hidden="true">
+        {rowA.map((t) => <li class="mq-item"><span>{t}</span><span class="mq-sep"></span></li>)}
+      </ul>
+    </div>
+    <div class="mq-row mq-row--b" data-dir="1" aria-hidden="true">
+      <ul class="mq-set">
+        {rowB.map((t) => <li class="mq-item"><span>{t}</span><span class="mq-sep"></span></li>)}
+      </ul>
+      <ul class="mq-set">
+        {rowB.map((t) => <li class="mq-item"><span>{t}</span><span class="mq-sep"></span></li>)}
+      </ul>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="sk-extra">
+      <!-- Education -->
+      <div class="sk-col" data-reveal="up">
+        <p class="meta sk-col-k" aria-hidden="true">(a)</p>
+        <h3 class="sk-col-h"><span class="serif">{tr(ui.education, lang)}</span></h3>
+        <ol class="sk-edu">
+          {education.map((e) => {
+            const [a, b] = tr(e.period, lang).split('–').map((x) => x.trim());
+            const y1 = a.match(/\d{4}/)?.[0];
+            const y2 = b?.match(/\d{4}/)?.[0];
+            return (
+              <li class="sk-edu-i">
+                <p class="meta sk-edu-p">
+                  {y1 ? <time datetime={y1}>{a}</time> : a}
+                  {b && <span aria-hidden="true"> — </span>}
+                  {b && (y2 ? <time datetime={y2}>{b}</time> : <span>{b}</span>)}
+                </p>
+                <h4 class="sk-edu-t">{tr(e.title, lang)}</h4>
+                <p class="sk-edu-pl">{tr(e.place, lang)}</p>
+                {tr(e.note, lang) && <p class="sk-edu-n">{tr(e.note, lang)}</p>}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      <!-- Certifications -->
+      <div class="sk-col" data-reveal="up" data-delay="0.1">
+        <p class="meta sk-col-k" aria-hidden="true">(b)</p>
+        <h3 class="sk-col-h"><span class="serif">{tr(ui.certifications, lang)}</span></h3>
+        <ol class="sk-certs">
+          {certifications.map((c, i) => (
+            <li class="sk-cert">
+              <span class="meta sk-cert-n" aria-hidden="true">{pad(i + 1)}</span>
+              <span class="sk-cert-t">{c}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <!-- Languages -->
+      <div class="sk-col" data-reveal="up" data-delay="0.2">
+        <p class="meta sk-col-k" aria-hidden="true">(c)</p>
+        <h3 class="sk-col-h"><span class="serif">{tr(ui.languages, lang)}</span></h3>
+        <ul class="sk-langs">
+          {languages.map((l) => {
+            const on = Math.round(l.value * SEGS);
+            const level = tr(l.level, lang);
+            return (
+              <li class="sk-lang">
+                <div class="sk-lang-row">
+                  <span class="sk-lang-name">{tr(l.name, lang)}</span>
+                  <span class="meta sk-lang-lvl">{level}</span>
+                </div>
+                <span
+                  class="sk-meter"
+                  role="meter"
+                  aria-label={tr(l.name, lang)}
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow={Math.round(l.value * 100)}
+                  aria-valuetext={level}
+                >
+                  {Array.from({ length: SEGS }, (_, i) => <span class:list={['seg', { on: i < on }]} />)}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
   </div>
 </section>
 
 <style>
-  .skills-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 18px;
-    margin-bottom: 48px;
-  }
+  .sk { padding-block: var(--section-y); }
 
-  .skill-card {
+  .sk-head {
     position: relative;
-    padding: 24px 22px;
-    border-radius: 18px;
-    border: 1px solid var(--line);
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-    overflow: hidden;
-    transition: border-color 0.45s var(--ease), transform 0.45s var(--ease);
+    isolation: isolate;
+    margin-bottom: clamp(40px, 8vh, 96px);
   }
-
-  .skill-card::after {
+  .sk-head::before {
     content: '';
     position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 2px;
-    background: var(--grad);
-    transform: scaleX(0.1);
-    transform-origin: left;
-    transition: transform 0.7s var(--ease);
+    inset: -30% -20% -30% -30%;
+    z-index: -1;
+    background: radial-gradient(closest-side, rgba(5, 5, 7, 0.78), rgba(5, 5, 7, 0));
+    pointer-events: none;
   }
-
-  .skill-card:hover {
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-3px);
+  .sk-head .meta { margin-bottom: 1.2rem; }
+  .sk-h2 {
+    font-size: var(--fs-h1);
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    font-weight: 500;
   }
+  .sk-h2 .serif { color: var(--signal); padding-right: 0.06em; }
 
-  .skill-card:hover::after {
-    transform: scaleX(1);
+  /* ---------------- interactive index ---------------- */
+  .sk-index {
+    position: relative;
+    isolation: isolate;
+    border-top: 1px solid var(--line);
   }
-
-  .skill-cat {
-    font-size: 0.66rem;
-    letter-spacing: 0.22em;
-    color: var(--faint);
-    margin-bottom: 18px;
-    text-transform: uppercase;
+  .sk-index::before {
+    content: '';
+    position: absolute;
+    inset: -6% -8%;
+    z-index: -1;
+    background: linear-gradient(90deg, rgba(5, 5, 7, 0) 0%, rgba(5, 5, 7, 0.66) 22%, rgba(5, 5, 7, 0.66) 78%, rgba(5, 5, 7, 0) 100%);
+    pointer-events: none;
   }
-
-  .skill-items {
+  .sk-group {
+    position: relative;
+    padding: clamp(18px, 3vw, 34px) 0;
+    border-bottom: 1px solid var(--line);
+    outline: none;
+    transition: opacity 0.5s var(--ease-out);
+  }
+  .sk-group:focus-visible { box-shadow: inset 0 0 0 2px var(--signal); border-radius: 6px; }
+  .sk-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    gap: 0.9rem;
+  }
+  .sk-num { color: var(--fg-3); transition: color 0.4s; }
+  .sk-count { color: var(--fg-3); }
+  .sk-name {
+    font-size: clamp(2.4rem, 8.4vw, 7.2rem);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    font-weight: 500;
+    overflow: hidden;
+    padding: 0.04em 0 0.14em;
+    margin-bottom: -0.1em;
+  }
+  .sk-name-in {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--signal) 0 50%, var(--fg) 50% 100%) no-repeat;
+    background-size: 200% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    transition: background-position 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+  }
+  .sk-items {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 0.45rem;
+    margin-top: 1rem;
+  }
+  .sk-chip {
+    font-size: 0.92rem;
+    padding: 0.42em 0.95em;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    color: var(--fg-2);
+    background: rgba(5, 5, 7, 0.55);
+    transition: color 0.4s, border-color 0.4s, background-color 0.4s;
   }
 
-  .skill-pill {
-    display: inline-block;
-    padding: 7px 13px;
-    font-size: 0.82rem;
-    font-weight: 500;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--line);
-    color: rgba(255, 255, 255, 0.85);
-    transition: all 0.3s var(--ease);
+  /* active / dimmed states (class set by JS; :focus-within as a no-JS fallback) */
+  .sk-index.is-hovering .sk-group:not(.is-active) { opacity: 0.22; }
+  .sk-group.is-active .sk-name-in,
+  .sk-group:focus-within .sk-name-in { background-position: 0 0; transform: translateX(0.12em); }
+  .sk-group.is-active .sk-num { color: var(--signal); }
+  .sk-group.is-active .sk-chip {
+    color: var(--fg);
+    border-color: rgba(215, 255, 58, 0.55);
+    animation: sk-chip-in 0.6s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 45ms);
+  }
+  .sk-group.is-active .sk-chip:hover { background: var(--signal); color: var(--signal-ink); }
+  @keyframes sk-chip-in {
+    from { opacity: 0; transform: translateY(14px) scale(0.92); }
+    to { opacity: 1; transform: none; }
   }
 
-  .skill-pill:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
+  @media (min-width: 1024px) {
+    .sk-top { display: grid; grid-template-columns: 4fr 8fr; column-gap: clamp(32px, 4vw, 80px); }
+    .sk-head { grid-column: 2; }
+    .sk-index { grid-column: 2; }
+    .sk-group { display: grid; grid-template-columns: 1fr; }
+    .sk-row { gap: 1.4rem; }
+    .sk-items { padding-left: calc(1.4rem + 2ch); }
   }
 
-  .certs {
-    padding: 28px 28px;
-    border-radius: 20px;
-    border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.02);
+  /* ---------------- marquee ---------------- */
+  .mq {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    margin-block: clamp(72px, 14vh, 160px);
+    padding-block: 0.6rem;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   }
-
-  .certs-title {
-    font-size: 0.68rem;
-    letter-spacing: 0.22em;
-    color: var(--faint);
-    margin-bottom: 18px;
-  }
-
-  .certs-list {
-    list-style: none;
+  .mq-row {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    width: max-content;
+    will-change: transform;
   }
-
-  .certs-list li {
+  .mq-row + .mq-row { margin-top: 0.15em; }
+  .mq-set { display: flex; flex-shrink: 0; }
+  .mq-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 0;
-    font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.88);
-    border-bottom: 1px dashed var(--line);
+    font-size: clamp(2.4rem, 7.2vw, 7rem);
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--fg);
+  }
+  .mq-item:nth-child(even) > span:first-child,
+  .mq-row--b .mq-item:nth-child(odd) > span:first-child {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--fg-2);
+  }
+  .mq-row--b .mq-item:nth-child(even) > span:first-child {
+    font-family: var(--font-sans);
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    color: var(--fg-3);
+    -webkit-text-stroke: 0;
+  }
+  .mq-item > span:first-child { transition: color 0.3s, -webkit-text-stroke-color 0.3s; }
+  .mq-item:hover > span:first-child { color: var(--signal); -webkit-text-stroke-color: var(--signal); }
+  .mq-sep {
+    display: inline-block;
+    width: 0.22em;
+    height: 0.22em;
+    margin-inline: 0.42em;
+    background: var(--signal);
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+    flex-shrink: 0;
   }
 
-  .certs-list li:last-child { border: none; }
-
-  .cert-issuer {
-    font-family: 'Source Code Pro', monospace;
-    font-size: 0.78rem;
-    color: var(--faint);
-    min-width: 140px;
-    letter-spacing: 0.02em;
+  /* ---------------- education / certs / languages ---------------- */
+  .sk-extra {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    gap: clamp(48px, 7vw, 72px);
   }
-
-  .cert-dot { color: var(--grad-3); }
-
-  .cert-name {
-    font-weight: 500;
+  .sk-extra::before {
+    content: '';
+    position: absolute;
+    inset: -10% -6%;
+    z-index: -1;
+    background: radial-gradient(ellipse at 50% 50%, rgba(5, 5, 7, 0.72), rgba(5, 5, 7, 0) 70%);
+    pointer-events: none;
   }
-
-  @media (max-width: 520px) {
-    .certs-list li { flex-wrap: wrap; }
-    .cert-issuer { min-width: 0; }
+  @media (min-width: 900px) {
+    .sk-extra { grid-template-columns: 1.25fr 1fr 1fr; gap: clamp(32px, 4vw, 72px); }
   }
+  .sk-col { border-top: 1px solid var(--line-strong); padding-top: 1.4rem; min-width: 0; }
+  .sk-col-k { color: var(--signal); margin-bottom: 0.6rem; }
+  .sk-col-h { font-size: var(--fs-h3); line-height: 1; margin-bottom: clamp(24px, 3vw, 40px); }
+  .sk-col-h .serif { font-size: 1.25em; }
+
+  .sk-edu { display: grid; gap: 2rem; }
+  .sk-edu-p { color: var(--fg-3); margin-bottom: 0.5rem; }
+  .sk-edu-t { font-size: 1.2rem; font-weight: 500; line-height: 1.2; letter-spacing: -0.01em; }
+  .sk-edu-pl { color: var(--fg-2); margin-top: 0.2rem; }
+  .sk-edu-n { color: var(--fg-3); font-size: 0.92rem; margin-top: 0.7rem; max-width: 46ch; }
+
+  .sk-certs { display: grid; }
+  .sk-cert {
+    display: grid;
+    grid-template-columns: 2.4rem 1fr;
+    align-items: baseline;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--line);
+    transition: padding-left 0.5s var(--ease-out);
+  }
+  .sk-cert:first-child { padding-top: 0; }
+  .sk-cert:hover { padding-left: 0.4rem; }
+  .sk-cert-n { color: var(--fg-3); transition: color 0.3s; }
+  .sk-cert:hover .sk-cert-n { color: var(--signal); }
+  .sk-cert-t { font-size: 1.05rem; }
+
+  .sk-langs { display: grid; gap: 1.6rem; }
+  .sk-lang-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 0.65rem; }
+  .sk-lang-name { font-size: 1.15rem; font-weight: 500; }
+  .sk-lang-lvl { color: var(--signal); }
+  .sk-meter { display: flex; gap: 4px; height: 10px; align-items: stretch; }
+  .seg {
+    flex: 1;
+    border-radius: 1px;
+    background: var(--ink-3);
+    transform-origin: 50% 100%;
+  }
+  .seg.on { background: var(--signal); box-shadow: 0 0 8px rgba(215, 255, 58, 0.35); }
 </style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function onReady(fn: () => void) {
+    const html = document.documentElement;
+    if (html.classList.contains('is-ready')) return fn();
+    let done = false;
+    const go = () => { if (!done) { done = true; fn(); } };
+    window.addEventListener('app:ready', go, { once: true });
+    window.setTimeout(go, 8000);
+  }
+
+  // ---------------- interactive index (no motion dependency; wired immediately) ----------------
+  function initIndex(root: HTMLElement) {
+    const index = root.querySelector<HTMLElement>('.sk-index');
+    if (!index) return;
+    const groups = Array.from(index.querySelectorAll<HTMLElement>('.sk-group'));
+    let lastPulse = 0;
+    const setActive = (g: HTMLElement | null) => {
+      groups.forEach((el) => el.classList.toggle('is-active', el === g));
+      index.classList.toggle('is-hovering', !!g);
+      if (g && !reduced) {
+        const now = performance.now();
+        if (now - lastPulse > 450) {
+          lastPulse = now;
+          window.dispatchEvent(new CustomEvent('gl:pulse', { detail: { strength: 0.4 } }));
+        }
+      }
+    };
+    groups.forEach((g) => {
+      g.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse' || e.pointerType === 'pen') setActive(g); });
+      g.addEventListener('focusin', () => setActive(g));
+      g.addEventListener('click', () => setActive(g));
+    });
+    index.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch' && !index.contains(document.activeElement)) setActive(null); });
+    index.addEventListener('focusout', (e) => { if (!index.contains(e.relatedTarget as Node)) setActive(null); });
+  }
+
+  // ---------------- velocity marquee ----------------
+  function initMarquee(root: HTMLElement) {
+    const mq = root.querySelector<HTMLElement>('.mq');
+    if (!mq || reduced) return;
+    type Row = { el: HTMLElement; dir: number; x: number; w: number; hover: number; hoverT: number };
+    const rows: Row[] = Array.from(mq.querySelectorAll<HTMLElement>('.mq-row')).map((el) => ({
+      el, dir: Number(el.dataset.dir) || -1, x: 0, w: 0, hover: 1, hoverT: 1,
+    }));
+
+    const measure = () => {
+      rows.forEach((r) => {
+        const sets = r.el.querySelectorAll<HTMLElement>('.mq-set');
+        const first = sets[0];
+        if (!first) return;
+        r.w = first.offsetWidth;
+        // make sure there are enough copies to cover the viewport while wrapping
+        const need = Math.ceil(window.innerWidth / Math.max(r.w, 1)) + 1;
+        for (let n = sets.length; n < need; n++) {
+          const c = first.cloneNode(true) as HTMLElement;
+          c.setAttribute('aria-hidden', 'true');
+          r.el.appendChild(c);
+        }
+      });
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    document.fonts?.ready.then(measure);
+
+    rows.forEach((r) => {
+      r.el.addEventListener('pointerenter', () => (r.hoverT = 0));
+      r.el.addEventListener('pointerleave', () => (r.hoverT = 1));
+    });
+
+    let visible = false;
+    new IntersectionObserver(([e]) => (visible = e.isIntersecting), { rootMargin: '100px 0px' }).observe(mq);
+
+    let lastY = window.scrollY;
+    let vel = 0, skew = 0, flip = 1;
+    const BASE = 55; // px per second
+    gsap.ticker.add((_t, dtMs) => {
+      const y = window.scrollY;
+      const lenis = (window as any).__lenis;
+      const raw = typeof lenis?.velocity === 'number' ? lenis.velocity : y - lastY;
+      lastY = y;
+      if (!visible) return;
+      const dt = Math.min(dtMs, 64) / 1000;
+      vel += (raw - vel) * 0.12;
+      if (Math.abs(raw) > 0.5) flip = raw > 0 ? 1 : -1;
+      const boost = 1 + Math.min(Math.abs(vel) * 0.45, 10);
+      const sk = gsap.utils.clamp(-9, 9, -vel * 0.35);
+      skew += (sk - skew) * 0.1;
+      rows.forEach((r) => {
+        if (!r.w) return;
+        r.hover += (r.hoverT - r.hover) * 0.08;
+        r.x += r.dir * flip * BASE * boost * r.hover * dt;
+        r.x = ((r.x % r.w) - r.w) % r.w; // keep in (-w, 0]
+        r.el.style.transform = `translate3d(${r.x.toFixed(2)}px,0,0) skewX(${(skew * r.dir * -1).toFixed(2)}deg)`;
+      });
+    });
+  }
+
+  // ---------------- reveal choreography (after app:ready) ----------------
+  function initMotion(root: HTMLElement) {
+    if (reduced) return;
+    root.querySelectorAll<HTMLElement>('.sk-group').forEach((g) => {
+      const name = g.querySelector('.sk-name-in');
+      const chips = g.querySelectorAll('.sk-chip');
+      const meta = g.querySelectorAll('.sk-num, .sk-count');
+      gsap.timeline({
+        defaults: { ease: 'expo.out' },
+        scrollTrigger: { trigger: g, start: 'top 88%', toggleActions: 'play none none none' },
+      })
+        .from(name, { yPercent: 105, duration: 1.2, clearProps: 'transform' }, 0)
+        .from(meta, { autoAlpha: 0, duration: 0.8 }, 0.2)
+        .from(chips, { autoAlpha: 0, y: 12, stagger: 0.035, duration: 0.7, clearProps: 'opacity,visibility,transform' }, 0.25);
+    });
+
+    root.querySelectorAll<HTMLElement>('.sk-meter').forEach((m) => {
+      const on = m.querySelectorAll('.seg.on');
+      gsap.from(on, {
+        scaleY: 0.25,
+        opacity: 0.12,
+        duration: 0.5,
+        ease: 'power3.out',
+        stagger: 0.035,
+        scrollTrigger: { trigger: m, start: 'top 92%', toggleActions: 'play none none none' },
+      });
+    });
+  }
+
+  const root = document.getElementById('skills');
+  if (root) {
+    initIndex(root);
+    onReady(() => {
+      initMarquee(root);
+      initMotion(root);
+      document.fonts?.ready.then(() => ScrollTrigger.refresh());
+    });
+  }
+</script>

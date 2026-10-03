@@ -1,0 +1,326 @@
+---
+// CookWhat micro-demo: toggle what's in the "fridge", a card shuffles to a matching dish.
+// Purely illustrative — a tiny hardcoded list, not the real app. OWNER: Agent "projects".
+import { tr, type Lang, type Project } from '../../data/cv';
+interface Props { project: Project; lang: Lang }
+const { project, lang } = Astro.props;
+
+const L = {
+  fridge: { en: 'In your fridge', it: 'Nel tuo frigo' },
+  pick: { en: 'Tap to toggle', it: 'Tocca per scegliere' },
+  suggest: { en: 'Tonight you could cook', it: 'Stasera potresti cucinare' },
+  uses: { en: 'Uses', it: 'Usa' },
+  missing: { en: 'Missing', it: 'Manca' },
+  none: { en: 'Add something from the fridge', it: 'Aggiungi qualcosa dal frigo' },
+  empty: { en: 'Nothing yet', it: 'Ancora niente' },
+  disc: { en: 'Illustrative demo — a tiny local list, not the real app', it: "Demo illustrativa — una piccola lista locale, non l'app vera" },
+  group: { en: 'Ingredients', it: 'Ingredienti' },
+};
+
+const ingredients = [
+  { id: 'eggs', en: 'Eggs', it: 'Uova' },
+  { id: 'tomato', en: 'Tomato', it: 'Pomodoro' },
+  { id: 'basil', en: 'Basil', it: 'Basilico' },
+  { id: 'pasta', en: 'Pasta', it: 'Pasta' },
+  { id: 'cheese', en: 'Cheese', it: 'Formaggio' },
+  { id: 'rice', en: 'Rice', it: 'Riso' },
+  { id: 'lemon', en: 'Lemon', it: 'Limone' },
+  { id: 'garlic', en: 'Garlic', it: 'Aglio' },
+];
+const recipes = [
+  { en: 'Pasta al pomodoro', it: 'Pasta al pomodoro', needs: ['pasta', 'tomato', 'basil'] },
+  { en: 'Herb frittata', it: 'Frittata alle erbe', needs: ['eggs', 'cheese', 'basil'] },
+  { en: 'Caprese salad', it: 'Insalata caprese', needs: ['tomato', 'cheese', 'basil'] },
+  { en: 'Lemon risotto', it: 'Risotto al limone', needs: ['rice', 'lemon', 'cheese'] },
+  { en: 'Shakshuka', it: 'Shakshuka', needs: ['eggs', 'tomato', 'garlic'] },
+  { en: 'Cacio e pepe', it: 'Cacio e pepe', needs: ['pasta', 'cheese'] },
+  { en: 'Egg fried rice', it: 'Riso saltato con uova', needs: ['rice', 'eggs', 'garlic'] },
+  { en: 'Bruschetta', it: 'Bruschetta', needs: ['tomato', 'basil', 'garlic'] },
+  { en: 'Aglio e olio', it: 'Aglio e olio', needs: ['pasta', 'garlic'] },
+  { en: 'Lemon pasta', it: 'Pasta al limone', needs: ['pasta', 'lemon', 'cheese'] },
+];
+const data = {
+  ingredients: Object.fromEntries(ingredients.map((x) => [x.id, x[lang]])),
+  recipes: recipes.map((r) => ({ name: r[lang], needs: r.needs })),
+  t: { uses: L.uses[lang], missing: L.missing[lang], none: L.none[lang], empty: L.empty[lang] },
+};
+const initial = ['pasta', 'tomato', 'basil'];
+const facts = project.facts.slice(0, 2).map((f) => tr(f, lang));
+---
+<div class="cw" data-demo="cookwhat" data-cw={JSON.stringify(data)}>
+  <div class="cw-fridge">
+    <div class="cw-row">
+      <p class="meta cw-label">{L.fridge[lang]}</p>
+      <p class="meta cw-hint">{L.pick[lang]}</p>
+    </div>
+    <div class="cw-chips" role="group" aria-label={L.group[lang]}>
+      {ingredients.map((x) => (
+        <button type="button" class="cw-chip" data-ing={x.id} aria-pressed={initial.includes(x.id) ? 'true' : 'false'}>
+          <span class="cw-dot" aria-hidden="true"></span>
+          {x[lang]}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <div class="cw-card" data-cw-card>
+    <div class="cw-card-top">
+      <p class="meta cw-label">{L.suggest[lang]}</p>
+      <svg class="cw-steam" viewBox="0 0 40 24" aria-hidden="true">
+        <path d="M8 22c-4-5 4-8 0-14M20 22c-4-5 4-8 0-14M32 22c-4-5 4-8 0-14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+      </svg>
+    </div>
+    <p class="cw-dish" data-cw-dish>{recipes[0][lang]}</p>
+    <div class="cw-meter" aria-hidden="true"><span data-cw-meter style="--m:1"></span></div>
+    <p class="cw-why" data-cw-why>
+      {L.uses[lang]}: {recipes[0].needs.map((n) => ingredients.find((x) => x.id === n)?.[lang]).join(' · ')}
+    </p>
+    <ul class="cw-facts">
+      {facts.map((f) => <li class="meta">{f}</li>)}
+    </ul>
+  </div>
+  <p class="meta cw-disc">{L.disc[lang]}</p>
+  <p class="sr-only" aria-live="polite" data-cw-live></p>
+</div>
+
+<style>
+  .cw {
+    position: relative;
+    width: min(100%, 460px);
+    display: grid;
+    gap: 14px;
+  }
+  .cw-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .cw-label { color: var(--fg-2); }
+  .cw-hint { color: var(--fg-3); font-size: 0.66rem; }
+  .cw-fridge {
+    padding: 16px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: rgb(11 11 16 / 0.9);
+  }
+  .cw-chips {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .cw-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    color: var(--fg-2);
+    font-size: 0.92rem;
+    transition: background-color 0.3s var(--ease-out), color 0.3s var(--ease-out), border-color 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+  }
+  .cw-chip:hover { border-color: color-mix(in srgb, var(--accent) 60%, transparent); color: var(--fg); }
+  .cw-chip:active { transform: scale(0.96); }
+  .cw-chip:focus-visible { outline-color: var(--accent); }
+  .cw-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    transition: background-color 0.3s, border-color 0.3s;
+  }
+  .cw-chip[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    border-color: var(--accent);
+    color: var(--fg);
+  }
+  .cw-chip[aria-pressed='true'] .cw-dot { background: var(--accent); border-color: var(--accent); }
+
+  .cw-card {
+    position: relative;
+    padding: 18px 18px 16px;
+    border-radius: var(--radius);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--accent) 9%, transparent), transparent 60%),
+      rgb(11 11 16 / 0.94);
+    overflow: hidden;
+  }
+  .cw-card-top { display: flex; justify-content: space-between; align-items: center; }
+  .cw-steam { width: 34px; height: 20px; color: var(--accent); opacity: 0.7; }
+  .cw-steam path { stroke-dasharray: 4 3; animation: cw-steam 1.8s linear infinite; }
+  .cw.is-paused .cw-steam path { animation-play-state: paused; }
+  .cw-dish {
+    margin-top: 10px;
+    font-size: clamp(1.8rem, 7vw, 2.6rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    font-weight: 500;
+    min-height: 1em;
+  }
+  .cw-dish.is-shuffling { color: var(--fg-3); filter: blur(0.6px); }
+  .cw-meter {
+    margin-top: 14px;
+    height: 2px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .cw-meter span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: left;
+    transform: scaleX(var(--m));
+    transition: transform 0.7s var(--ease-out);
+  }
+  .cw-why {
+    margin-top: 10px;
+    color: var(--fg-2);
+    font-size: 0.92rem;
+    min-height: 2.6em;
+  }
+  .cw-facts {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+  }
+  .cw-facts li { color: var(--accent); }
+  .cw-disc { font-size: 0.64rem; color: var(--fg-3); }
+
+  @keyframes cw-steam { to { stroke-dashoffset: -14; } }
+  @media (min-width: 1024px) {
+    .cw { width: min(100%, 470px); }
+    .cw-card { margin-left: 12%; margin-right: -4%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cw-steam path { animation: none; }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { reducedMotion, visibilityGate, whenReady } from './runtime';
+
+  type Data = {
+    ingredients: Record<string, string>;
+    recipes: { name: string; needs: string[] }[];
+    t: { uses: string; missing: string; none: string; empty: string };
+  };
+
+  function initCook(root: HTMLElement) {
+    const data: Data = JSON.parse(root.dataset.cw || '{}');
+    const chips = Array.from(root.querySelectorAll<HTMLButtonElement>('.cw-chip'));
+    const dish = root.querySelector<HTMLElement>('[data-cw-dish]')!;
+    const why = root.querySelector<HTMLElement>('[data-cw-why]')!;
+    const meter = root.querySelector<HTMLElement>('[data-cw-meter]')!;
+    const card = root.querySelector<HTMLElement>('[data-cw-card]')!;
+    const live = root.querySelector<HTMLElement>('[data-cw-live]');
+    let touched = false;
+    const reduce = reducedMotion();
+    let shuffleTimer = 0;
+    let lastName = dish.textContent || '';
+
+    const selected = () => chips.filter((c) => c.getAttribute('aria-pressed') === 'true').map((c) => c.dataset.ing!);
+
+    const best = (have: string[]) => {
+      let top: { name: string; needs: string[] } | null = null;
+      let score = -Infinity;
+      for (const r of data.recipes) {
+        const hit = r.needs.filter((n) => have.includes(n)).length;
+        if (!hit) continue;
+        const s = hit * 2 - (r.needs.length - hit) + (r.name === lastName ? 0.1 : 0);
+        if (s > score) {
+          score = s;
+          top = r;
+        }
+      }
+      return top;
+    };
+
+    const render = (r: { name: string; needs: string[] } | null, have: string[]) => {
+      if (!r) {
+        dish.textContent = data.t.empty;
+        why.textContent = data.t.none;
+        meter.style.setProperty('--m', '0');
+        lastName = '';
+        return;
+      }
+      const used = r.needs.filter((n) => have.includes(n)).map((n) => data.ingredients[n]);
+      const miss = r.needs.filter((n) => !have.includes(n)).map((n) => data.ingredients[n]);
+      dish.textContent = r.name;
+      why.textContent = `${data.t.uses}: ${used.join(' · ')}${miss.length ? `  —  ${data.t.missing}: ${miss.join(' · ')}` : ''}`;
+      meter.style.setProperty('--m', String(used.length / r.needs.length));
+      lastName = r.name;
+      if (touched && live) live.textContent = `${r.name}. ${why.textContent}`;
+    };
+
+    const update = () => {
+      const have = selected();
+      const r = best(have);
+      window.clearTimeout(shuffleTimer);
+      if (reduce) return render(r, have);
+      // satisfying slot-machine shuffle before landing
+      let n = 0;
+      const total = 7;
+      dish.classList.add('is-shuffling');
+      const tick = () => {
+        n++;
+        if (n < total) {
+          const other = data.recipes[(Math.random() * data.recipes.length) | 0];
+          dish.textContent = other.name;
+          shuffleTimer = window.setTimeout(tick, 40 + n * 12);
+        } else {
+          dish.classList.remove('is-shuffling');
+          render(r, have);
+          gsap.fromTo(dish, { yPercent: 40, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.6, ease: 'expo.out' });
+          gsap.fromTo(card, { rotation: -1.2 }, { rotation: 0, duration: 0.9, ease: 'elastic.out(1, 0.45)' });
+        }
+      };
+      tick();
+    };
+
+    chips.forEach((c) =>
+      c.addEventListener('click', () => {
+        touched = true;
+        c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+        update();
+      }),
+    );
+
+    if (reduce) {
+      root.classList.add('is-paused');
+      return;
+    }
+
+    // Idle autoplay: the fridge "changes" by itself until the visitor plays with it.
+    let auto = 0;
+    const autoStep = () => {
+      if (touched) return;
+      const have = selected();
+      // keep 2–4 items selected so there's always a dish
+      const pool = have.length >= 4 ? chips.filter((c) => c.getAttribute('aria-pressed') === 'true')
+        : have.length <= 2 ? chips.filter((c) => c.getAttribute('aria-pressed') !== 'true')
+        : chips;
+      const c = pool[(Math.random() * pool.length) | 0];
+      c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+      gsap.fromTo(c, { scale: 0.9 }, { scale: 1, duration: 0.6, ease: 'elastic.out(1, 0.5)' });
+      update();
+    };
+
+    whenReady(() =>
+      visibilityGate(root, (on) => {
+        root.classList.toggle('is-paused', !on);
+        window.clearInterval(auto);
+        if (on && !touched) auto = window.setInterval(autoStep, 3400);
+      }),
+    );
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="cookwhat"]').forEach(initCook);
+</script>

@@ -1,456 +1,210 @@
 ---
-import { profile } from '../data/cv';
+// OWNER: Agent "shell". Hero: massive editorial name, film-HUD details, GL "signal core" behind.
+import { profile, ui, tr, type Lang } from '../data/cv';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const first = profile.firstName.toUpperCase();
+const last = profile.lastName.toUpperCase();
+const [focusA, ...focusRest] = tr(profile.focus, lang).split(' & ');
+const coords = '45.0703° N, 7.6869° E';
 ---
+<section id="top" class="hero" data-gl="hero" data-gl-side="center" aria-labelledby="hero-title">
+  <h1 id="hero-title" class="sr-only">{profile.name} — {tr(profile.role, lang)}, {tr(profile.focus, lang)}</h1>
 
-<section id="top" class="hero">
-  <canvas id="heroCanvas" aria-hidden="true"></canvas>
-
-  <div class="hero-ui">
-    <p class="eyebrow reveal">
-      <span class="live"></span> DISPONIBILE · {profile.location}
-    </p>
-
-    <h1 class="hero-title reveal" data-delay="1">
-      <span class="line">Ciao, sono</span>
-      <span class="line name">
-        <span class="gradient-text">{profile.firstName}</span>
-        <span class="last">{profile.lastName}.</span>
+  <div class="hero__grid wrap">
+    <div class="hero__word hero__word--a" data-hero-word="a" aria-hidden="true">
+      <span class="hero__tilt" data-hero-tilt="1.0">
+        {Array.from(first).map((c) => <span class="hero__mask"><span class="hero__char" data-hero-char>{c}</span></span>)}
       </span>
-      <span class="line role">{profile.role} <span class="cursor-i">|</span></span>
-    </h1>
-
-    <p class="hero-tag reveal" data-delay="2">{profile.tagline}</p>
-
-    <div class="hero-cta reveal" data-delay="3">
-      <a href="#projects" class="btn btn-primary">
-        Vedi i miei lavori <span class="arrow">→</span>
-      </a>
-      <a href="#contact" class="btn btn-ghost">Contattami</a>
     </div>
 
-    <div class="hero-hint reveal" data-delay="4">
-      <span class="mono">MUOVI IL MOUSE</span>
-      <span class="dotsep">·</span>
-      <span class="mono">CLICK PER ESPLODERE</span>
-      <span class="dotsep">·</span>
-      <span class="mono">SCROLL ↓</span>
+    <div class="hero__role" data-hero-hud>
+      <p class="hero__role-line">
+        {tr(profile.role, lang)} — <span class="serif">{focusA}</span>{focusRest.length ? ` & ${focusRest.join(' & ')}` : ''}
+      </p>
+      <p class="meta hero__stack"><span class="hero__tick" aria-hidden="true">[ </span><span data-scramble>{profile.stackLine}</span><span class="hero__tick" aria-hidden="true"> ]</span></p>
+    </div>
+
+    <a class="hero__scroll meta" href="#about" data-hero-hud aria-label={`${tr(ui.scroll, lang)} — ${tr(ui.nav.about, lang)}`}>
+      <span class="hero__scroll-line" aria-hidden="true"><i></i></span>
+      <span>{tr(ui.scroll, lang)}</span>
+    </a>
+
+    <div class="hero__info" data-hero-hud>
+      <p class="hero__avail"><span class="hero__pulse" aria-hidden="true"></span>{tr(ui.available, lang)}</p>
+      <p class="meta hero__loc">
+        <span>{tr(profile.location, lang)}</span>
+        <span class="hero__coords" data-scramble>{coords}</span>
+      </p>
+    </div>
+
+    <div class="hero__word hero__word--b" data-hero-word="b" aria-hidden="true">
+      <span class="hero__tilt" data-hero-tilt="1.6">
+        {Array.from(last).map((c) => <span class="hero__mask"><span class="hero__char" data-hero-char>{c}</span></span>)}
+      </span>
     </div>
   </div>
 
-  <div class="scroll-ind" aria-hidden="true">
-    <span class="scroll-line"></span>
+  <div class="hero__frame" aria-hidden="true" data-hero-hud>
+    <span class="hero__corner hero__corner--tl"></span><span class="hero__corner hero__corner--tr"></span>
+    <span class="hero__corner hero__corner--bl"></span><span class="hero__corner hero__corner--br"></span>
   </div>
 </section>
 
 <style>
-  .hero {
-    position: relative;
-    min-height: 100vh;
-    width: 100%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 120px 28px 80px;
+  .hero { position: relative; min-height: 100vh; min-height: 100svh; overflow: hidden; overflow: clip; perspective: 1200px; }
+  .hero__grid {
+    position: relative; z-index: 1;
+    min-height: 100vh; min-height: 100svh;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto auto;
+    row-gap: 18px;
+    padding-top: calc(84px + 2vh);
+    padding-bottom: clamp(20px, 4vh, 44px);
   }
 
-  #heroCanvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
+  /* ---------- giant name ---------- */
+  .hero__word {
+    font-weight: 700; letter-spacing: -0.055em; line-height: 0.8;
+    font-size: min(25vw, 8rem);
+    white-space: nowrap; will-change: transform;
+    margin-inline: -0.04em;
   }
-
-  .hero-ui {
-    position: relative;
-    z-index: 2;
-    max-width: 900px;
-    text-align: center;
-    pointer-events: none;
+  .hero__word--a { grid-row: 1; justify-self: start; transform-origin: 0% 50%; }
+  .hero__word--b { grid-row: 5; justify-self: end; transform-origin: 100% 50%; }
+  .hero__tilt { display: inline-block; will-change: transform; }
+  .hero__mask { display: inline-block; overflow: hidden; padding: 0.06em 0.02em 0.04em; margin: -0.06em -0.02em -0.04em; vertical-align: top; }
+  .hero__char { display: inline-block; }
+  /* outlined word: variable-font glyphs have overlapping contours, so paint the stroke first and
+     cover its inner half with an ink fill (paint-order) — only the clean outer contour stays visible */
+  .hero__word--b .hero__char {
+    color: var(--ink-0);
+    -webkit-text-stroke: max(2px, 0.022em) var(--fg);
+    paint-order: stroke fill;
   }
+  .hero__word--a .hero__char { color: var(--fg); }
 
-  .hero-ui .btn, .hero-ui a { pointer-events: auto; }
+  /* ---------- HUD ---------- */
+  .hero__role { grid-row: 2; max-width: 22em; display: grid; gap: 10px; }
+  .hero__role-line { font-size: var(--fs-lead); line-height: 1.2; letter-spacing: -0.02em; color: var(--fg); text-shadow: 0 0 24px rgba(5, 5, 7, 0.9); }
+  .hero__role-line .serif { color: var(--signal); font-size: 1.12em; }
+  .hero__stack { color: var(--fg-2); white-space: nowrap; font-size: min(var(--fs-meta), 3.1vw); }
+  .hero__tick { color: var(--fg-3); }
 
-  .eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
+  .hero__info { grid-row: 4; display: grid; gap: 10px; justify-self: start; }
+  .hero__avail { display: inline-flex; align-items: center; gap: 10px; font-size: 0.95rem; color: var(--fg); text-shadow: 0 0 20px rgba(5, 5, 7, 0.9); }
+  .hero__pulse { position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--signal); flex: none; }
+  .hero__pulse::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--signal);
+    animation: heroping 2s var(--ease-out) infinite;
   }
+  @keyframes heroping { from { transform: scale(1); opacity: 0.9; } to { transform: scale(3.4); opacity: 0; } }
+  .hero__loc { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--fg-3); }
+  .hero__coords { color: var(--fg-2); font-variant-numeric: tabular-nums; }
 
-  .live {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #46cf71;
-    box-shadow: 0 0 0 4px rgba(70, 207, 113, 0.2), 0 0 16px #46cf71;
-    animation: live 2s ease-in-out infinite;
+  .hero__scroll { display: none; }
+
+  .hero__frame { position: absolute; inset: calc(76px + 1vh) var(--gutter) 14px; pointer-events: none; z-index: 0; }
+  .hero__corner { position: absolute; width: 14px; height: 14px; border-color: var(--line-strong); border-style: solid; border-width: 0; }
+  .hero__corner--tl { left: 0; top: 0; border-left-width: 1px; border-top-width: 1px; }
+  .hero__corner--tr { right: 0; top: 0; border-right-width: 1px; border-top-width: 1px; }
+  .hero__corner--bl { left: 0; bottom: 0; border-left-width: 1px; border-bottom-width: 1px; }
+  .hero__corner--br { right: 0; bottom: 0; border-right-width: 1px; border-bottom-width: 1px; }
+
+  @media (min-width: 768px) {
+    .hero__grid { grid-template-columns: 1fr auto; row-gap: 0; padding-top: calc(96px + 4vh); }
+    .hero__word { font-size: var(--fs-mega); }
+    .hero__word--a { grid-column: 1 / -1; grid-row: 1; }
+    .hero__word--b { grid-column: 1 / -1; grid-row: 5; }
+    .hero__role { grid-column: 2; grid-row: 2; justify-self: end; text-align: right; margin-top: clamp(16px, 3vh, 40px); max-width: 19em; }
+    .hero__info { grid-column: 1 / -1; grid-row: 5; align-self: end; padding-bottom: 0.6em; z-index: 1; }
+    .hero__scroll {
+      display: inline-flex; flex-direction: column; align-items: center; gap: 12px;
+      grid-column: 1; grid-row: 3; align-self: center; justify-self: start; color: var(--fg-3);
+      writing-mode: vertical-rl;
+    }
+    .hero__scroll:hover { color: var(--signal); }
   }
-
-  @keyframes live {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.55; transform: scale(0.85); }
+  @media (min-width: 1100px) {
+    .hero__info { padding-bottom: 1.2em; }
   }
+  .hero__scroll-line { position: relative; width: 1px; height: 64px; background: var(--line-strong); overflow: hidden; }
+  .hero__scroll-line i { position: absolute; left: 0; top: 0; width: 100%; height: 40%; background: var(--signal); animation: heroscroll 2.2s var(--ease-in-out) infinite; }
+  @keyframes heroscroll { from { transform: translateY(-100%); } to { transform: translateY(260%); } }
 
-  .hero-title {
-    margin-top: 22px;
-    font-family: 'Space Grotesk', 'Inter', sans-serif;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.035em;
-    font-size: clamp(2.4rem, 9vw, 6.8rem);
-  }
-
-  .hero-title .line {
-    display: block;
-  }
-
-  .hero-title .line:first-child {
-    font-size: 0.28em;
-    font-weight: 400;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--faint);
-    margin-bottom: 14px;
-  }
-
-  .name {
-    display: block;
-    line-height: 0.95;
-  }
-
-  .name .last {
-    display: block;
-    margin-top: 6px;
-    color: rgba(255, 255, 255, 0.9);
-  }
-
-  .role {
-    margin-top: 18px;
-    font-size: 0.24em;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    color: var(--muted);
-    text-transform: none;
-  }
-
-  .cursor-i {
-    display: inline-block;
-    width: 2px;
-    background: var(--grad-4);
-    color: transparent;
-    margin-left: 2px;
-    animation: blink 1s steps(1) infinite;
-  }
-
-  @keyframes blink {
-    50% { opacity: 0; }
-  }
-
-  .hero-tag {
-    margin-top: 32px;
-    font-size: clamp(0.95rem, 1.6vw, 1.1rem);
-    color: var(--muted);
-    max-width: 560px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.6;
-  }
-
-  .hero-cta {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 36px;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 24px;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 0.92rem;
-    letter-spacing: 0.01em;
-    transition: transform 0.3s var(--ease-pop), background 0.3s, border-color 0.3s, box-shadow 0.3s;
-    border: 1px solid transparent;
-  }
-
-  .btn-primary {
-    background: #fff;
-    color: #0b0b12;
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 40px rgba(255, 255, 255, 0.2);
-  }
-
-  .btn-primary .arrow {
-    transition: transform 0.3s var(--ease);
-  }
-
-  .btn-primary:hover .arrow {
-    transform: translateX(6px);
-  }
-
-  .btn-ghost {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: var(--line);
-    color: #fff;
-    backdrop-filter: blur(10px);
-  }
-
-  .btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
-  }
-
-  .hero-hint {
-    margin-top: 48px;
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    font-size: 0.64rem;
-    letter-spacing: 0.22em;
-    color: var(--faint);
-    text-transform: uppercase;
-  }
-
-  .dotsep {
-    opacity: 0.4;
-  }
-
-  .scroll-ind {
-    position: absolute;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 1px;
-    height: 40px;
-    overflow: hidden;
-    z-index: 2;
-  }
-
-  .scroll-line {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-    animation: scrollAnim 2.2s ease-in-out infinite;
-  }
-
-  @keyframes scrollAnim {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100%); }
-  }
-
-  @media (max-width: 600px) {
-    .hero-hint { flex-wrap: wrap; padding: 0 20px; }
-    .hero-cta { width: 100%; }
+  @media (prefers-reduced-motion: reduce) {
+    .hero__pulse::after, .hero__scroll-line i { animation: none; }
   }
 </style>
 
 <script>
-  // ================== Hero particle text ==================
-  const cvs = document.getElementById('heroCanvas') as HTMLCanvasElement | null;
-  if (cvs) {
-    const ctx = cvs.getContext('2d', { willReadFrequently: true })!;
-    let W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
-    let fontsReady = false;
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
 
-    const TEXT = 'HAMED';
-    const GAP = 4;
-    const mouse = { x: -9999, y: -9999, active: false, clicked: 0 };
+  const hero = document.querySelector<HTMLElement>('.hero[data-gl="hero"]');
+  if (hero) {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const charsA = hero.querySelectorAll<HTMLElement>('[data-hero-word="a"] [data-hero-char]');
+    const charsB = hero.querySelectorAll<HTMLElement>('[data-hero-word="b"] [data-hero-char]');
+    const hud = hero.querySelectorAll<HTMLElement>('[data-hero-hud]');
+    // intro animates the HUD children, scroll animates the HUD containers (no property fights)
+    const hudKids = hero.querySelectorAll<HTMLElement>('[data-hero-hud] > *');
+    const wordA = hero.querySelector<HTMLElement>('[data-hero-word="a"]')!;
+    const wordB = hero.querySelector<HTMLElement>('[data-hero-word="b"]')!;
+    const tilts = Array.from(hero.querySelectorAll<HTMLElement>('[data-hero-tilt]'));
 
-    type P = {
-      x: number; y: number;
-      ox: number; oy: number;
-      vx: number; vy: number;
-      size: number; base: number;
-      r: number; g: number; b: number;
-      op: number;
+    if (!reduced) {
+      gsap.set([...charsA, ...charsB], { yPercent: 120, rotate: 6, transformOrigin: '0% 100%' });
+      gsap.set(hudKids, { autoAlpha: 0, y: 18 });
+    }
+
+    const intro = () => {
+      if (reduced) return;
+      gsap.timeline({ delay: 0.15 })
+        .to(charsA, { yPercent: 0, rotate: 0, duration: 1.6, ease: 'expo.out', stagger: 0.07 })
+        .to(charsB, { yPercent: 0, rotate: 0, duration: 1.6, ease: 'expo.out', stagger: 0.07 }, 0.22)
+        .to(hudKids, { autoAlpha: 1, y: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08 }, 0.7)
+        .add(() => window.dispatchEvent(new CustomEvent('gl:pulse', { detail: { strength: 0.6 } })), 0.5);
     };
+    if (document.documentElement.classList.contains('is-ready')) intro();
+    else window.addEventListener('app:ready', intro, { once: true });
 
-    let particles: P[] = [];
+    if (!reduced) {
+      // scroll: the name parts like a curtain and the camera falls into the core
+      const mm = gsap.matchMedia();
+      mm.add({ desk: '(min-width: 768px)', mob: '(max-width: 767.98px)' }, (ctx) => {
+        const desk = ctx.conditions?.desk;
+        gsap.timeline({
+          scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: 0.8, invalidateOnRefresh: true },
+        })
+          .to(wordA, { xPercent: desk ? -38 : -28, yPercent: desk ? 70 : 40, scale: desk ? 1.7 : 1.35, ease: 'none' }, 0)
+          .to(wordB, { xPercent: desk ? 38 : 28, yPercent: desk ? -40 : -20, scale: desk ? 1.7 : 1.35, ease: 'none' }, 0)
+          .to([wordA, wordB], { autoAlpha: 0.0, ease: 'power1.in', duration: 0.5 }, 0.5)
+          .to(hud, { autoAlpha: 0, y: -40, ease: 'none', duration: 0.35, stagger: 0.03 }, 0);
+      });
 
-    function resize() {
-      const rect = cvs!.getBoundingClientRect();
-      W = rect.width;
-      H = rect.height;
-      cvs!.width = Math.floor(W * dpr);
-      cvs!.height = Math.floor(H * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      buildParticles();
-    }
-
-    function buildParticles() {
-      particles = [];
-      const off = document.createElement('canvas');
-      const octx = off.getContext('2d', { willReadFrequently: true })!;
-      off.width = W;
-      off.height = H;
-
-      const targetW = W * 0.82;
-      let fs = 40;
-      octx.font = `800 ${fs}px "Space Grotesk", "Inter", sans-serif`;
-      const baseW = octx.measureText(TEXT).width || 1;
-      fs = Math.floor((targetW / baseW) * fs);
-      fs = Math.max(48, Math.min(fs, 520));
-
-      octx.fillStyle = '#fff';
-      octx.textAlign = 'center';
-      octx.textBaseline = 'middle';
-      octx.font = `800 ${fs}px "Space Grotesk", "Inter", sans-serif`;
-      octx.fillText(TEXT, W / 2, H / 2);
-
-      const img = octx.getImageData(0, 0, W, H).data;
-
-      const gradStops: [number, number, number][] = [
-        [177, 105, 219],
-        [247, 209, 82],
-        [70, 207, 113],
-        [15, 191, 250],
-      ];
-
-      const sampleGap = W < 600 ? GAP + 2 : GAP;
-
-      for (let y = 0; y < H; y += sampleGap) {
-        for (let x = 0; x < W; x += sampleGap) {
-          const i = (y * W + x) * 4;
-          const a = img[i + 3];
-          if (a < 128) continue;
-
-          const t = x / W;
-          const seg = t * (gradStops.length - 1);
-          const si = Math.floor(seg);
-          const f = seg - si;
-          const c1 = gradStops[si];
-          const c2 = gradStops[Math.min(si + 1, gradStops.length - 1)];
-          const r = c1[0] + (c2[0] - c1[0]) * f;
-          const g = c1[1] + (c2[1] - c1[1]) * f;
-          const b = c1[2] + (c2[2] - c1[2]) * f;
-
-          const edge = Math.random();
-          let sx: number, sy: number;
-          if (edge < 0.25) { sx = Math.random() * W; sy = -30; }
-          else if (edge < 0.5) { sx = Math.random() * W; sy = H + 30; }
-          else if (edge < 0.75) { sx = -30; sy = Math.random() * H; }
-          else { sx = W + 30; sy = Math.random() * H; }
-
-          particles.push({
-            x: sx, y: sy,
-            ox: x, oy: y,
-            vx: 0, vy: 0,
-            size: sampleGap * 0.8,
-            base: sampleGap * 0.8,
-            r, g, b,
-            op: 0,
-          });
-        }
+      // mouse: subtle 3D parallax of the type layers
+      if (fine) {
+        const qs = tilts.map((el) => ({
+          d: parseFloat(el.dataset.heroTilt || '1'),
+          x: gsap.quickTo(el, 'x', { duration: 1.2, ease: 'power3.out' }),
+          y: gsap.quickTo(el, 'y', { duration: 1.2, ease: 'power3.out' }),
+          ry: gsap.quickTo(el, 'rotationY', { duration: 1.2, ease: 'power3.out' }),
+          rx: gsap.quickTo(el, 'rotationX', { duration: 1.2, ease: 'power3.out' }),
+        }));
+        tilts.forEach((el) => gsap.set(el, { transformPerspective: 900 }));
+        let inView = true;
+        ScrollTrigger.create({ trigger: hero, start: 'top bottom', end: 'bottom top', onToggle: (s) => (inView = s.isActive) });
+        window.addEventListener('pointermove', (e) => {
+          if (!inView || e.pointerType !== 'mouse') return;
+          const nx = e.clientX / window.innerWidth - 0.5;
+          const ny = e.clientY / window.innerHeight - 0.5;
+          qs.forEach((q) => { q.x(-nx * 26 * q.d); q.y(-ny * 16 * q.d); q.ry(nx * 8 * q.d); q.rx(-ny * 6 * q.d); });
+        }, { passive: true });
       }
     }
-
-    function render() {
-      ctx.fillStyle = 'rgba(8, 8, 12, 0.28)';
-      ctx.fillRect(0, 0, W, H);
-
-      const mx = mouse.x, my = mouse.y;
-      const active = mouse.active;
-
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        p.op += (1 - p.op) * 0.04;
-
-        const dx = p.ox - p.x;
-        const dy = p.oy - p.y;
-        p.vx += dx * 0.012;
-        p.vy += dy * 0.012;
-
-        if (active) {
-          const mdx = p.x - mx;
-          const mdy = p.y - my;
-          const distSq = mdx * mdx + mdy * mdy;
-          const radius = mouse.clicked > 0 ? 220 : 120;
-          const r2 = radius * radius;
-          if (distSq < r2 && distSq > 0) {
-            const d = Math.sqrt(distSq);
-            const force = (radius - d) / radius;
-            const power = mouse.clicked > 0 ? force * force * 14 : force * force * 4;
-            p.vx += (mdx / d) * power;
-            p.vy += (mdy / d) * power;
-            p.size = p.base * (1 + force * 0.9);
-          } else {
-            p.size += (p.base - p.size) * 0.1;
-          }
-        } else {
-          p.size += (p.base - p.size) * 0.1;
-        }
-
-        p.vx *= 0.92;
-        p.vy *= 0.92;
-        p.x += p.vx;
-        p.y += p.vy;
-
-        const s = Math.max(1, p.size);
-        ctx.globalAlpha = p.op;
-        ctx.fillStyle = `rgb(${p.r | 0},${p.g | 0},${p.b | 0})`;
-        ctx.fillRect(p.x - s / 2, p.y - s / 2, s, s);
-      }
-      ctx.globalAlpha = 1;
-
-      if (mouse.clicked > 0) mouse.clicked--;
-
-      requestAnimationFrame(render);
-    }
-
-    const rectFor = () => cvs.getBoundingClientRect();
-
-    window.addEventListener('pointermove', (e) => {
-      const r = rectFor();
-      if (e.clientY < r.top || e.clientY > r.bottom) {
-        mouse.active = false;
-        return;
-      }
-      mouse.active = true;
-      mouse.x = e.clientX - r.left;
-      mouse.y = e.clientY - r.top;
-    }, { passive: true });
-
-    window.addEventListener('pointerdown', (e) => {
-      const r = rectFor();
-      if (e.clientY >= r.top && e.clientY <= r.bottom) {
-        mouse.clicked = 40;
-      }
-    });
-
-    window.addEventListener('pointerleave', () => { mouse.active = false; });
-
-    cvs.addEventListener('touchmove', (e) => {
-      const t = e.touches[0];
-      const r = rectFor();
-      mouse.active = true;
-      mouse.x = t.clientX - r.left;
-      mouse.y = t.clientY - r.top;
-    }, { passive: true });
-
-    cvs.addEventListener('touchstart', (e) => {
-      const t = e.touches[0];
-      const r = rectFor();
-      mouse.active = true;
-      mouse.clicked = 40;
-      mouse.x = t.clientX - r.left;
-      mouse.y = t.clientY - r.top;
-    }, { passive: true });
-
-    cvs.addEventListener('touchend', () => { mouse.active = false; });
-
-    const ro = new ResizeObserver(() => resize());
-    ro.observe(cvs);
-    resize();
-    render();
   }
 </script>

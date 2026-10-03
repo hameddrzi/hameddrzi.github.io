@@ -1,0 +1,454 @@
+---
+// Pulse micro-demo: a smartwatch face with a live BPM + scrolling ECG (canvas2D); every second a BLE
+// "packet" travels to the phone and lands ~2 s later. Values are simulated. OWNER: Agent "projects".
+import type { Lang, Project } from '../../data/cv';
+interface Props { project: Project; lang: Lang }
+const { lang } = Astro.props;
+
+const L = {
+  watch: { en: 'Simulated smartwatch face showing a live heart rate of about 72 BPM', it: 'Quadrante di smartwatch simulato con un battito live di circa 72 BPM' },
+  phone: { en: 'Simulated phone receiving the heart rate about 2 seconds later', it: 'Telefono simulato che riceve il battito circa 2 secondi dopo' },
+  live: { en: 'Live', it: 'Live' },
+  phoneLbl: { en: 'Phone', it: 'Telefono' },
+  received: { en: 'received', it: 'ricevuto' },
+  every: { en: 'every 1 s', it: 'ogni 1 s' },
+  disc: { en: 'Simulated values · illustrative', it: 'Valori simulati · illustrativo' },
+};
+const ticks = Array.from({ length: 60 }, (_, k) => k);
+---
+<div class="pd" data-demo="heart">
+  <div class="pd-watch" role="img" aria-label={L.watch[lang]}>
+    <span class="pd-strap pd-strap--t" aria-hidden="true"></span>
+    <span class="pd-strap pd-strap--b" aria-hidden="true"></span>
+    <div class="pd-case">
+      <svg class="pd-bezel" viewBox="0 0 200 200" aria-hidden="true">
+        {ticks.map((k) => (
+          <line
+            x1="100" y1={k % 5 === 0 ? 6 : 8} x2="100" y2={k % 5 === 0 ? 15 : 12}
+            transform={`rotate(${k * 6} 100 100)`}
+            class:list={['pd-tick', k % 5 === 0 && 'pd-tick--h']}
+          />
+        ))}
+        <circle class="pd-ring" cx="100" cy="100" r="80" pathLength="100" />
+      </svg>
+      <div class="pd-face" aria-hidden="true">
+        <span class="meta pd-top"><i class="pd-live-dot"></i>{L.live[lang]} · HR</span>
+        <span class="pd-bpm">
+          <svg class="pd-heart" data-pd-heart viewBox="0 0 24 22"><path d="M12 21s-9-5.6-9-12A5 5 0 0 1 12 6a5 5 0 0 1 9 3c0 6.4-9 12-9 12Z" /></svg>
+          <span data-pd-bpm>72</span>
+        </span>
+        <span class="meta pd-unit">BPM</span>
+        <canvas class="pd-ecg" data-pd-ecg width="300" height="80"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="pd-link" aria-hidden="true">
+    <span class="meta pd-lat">~2 s</span>
+    <div class="pd-wire" data-pd-wire>
+      <span class="pd-pkt"></span><span class="pd-pkt"></span><span class="pd-pkt"></span><span class="pd-pkt"></span>
+    </div>
+    <span class="meta pd-proto">BLE · GATT</span>
+    <span class="meta pd-every">{L.every[lang]}</span>
+  </div>
+
+  <div class="pd-phone" role="img" aria-label={L.phone[lang]}>
+    <span class="pd-notch" aria-hidden="true"></span>
+    <span class="meta pd-phone-lbl" aria-hidden="true">{L.phoneLbl[lang]}</span>
+    <span class="pd-recv" data-pd-recv aria-hidden="true">72</span>
+    <span class="meta pd-phone-unit" aria-hidden="true">BPM · {L.received[lang]}</span>
+    <svg class="pd-spark" viewBox="0 0 60 20" preserveAspectRatio="none" aria-hidden="true"><polyline data-pd-spark points="0,10 60,10" /></svg>
+  </div>
+  <p class="meta pd-disc">{L.disc[lang]}</p>
+</div>
+
+<style>
+  .pd {
+    --w: clamp(170px, 46vw, 220px);
+    position: relative;
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(44px, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    max-width: 640px;
+    /* room for the straps that stick out of the watch case */
+    padding-block: calc(var(--w) * 0.26) 0;
+  }
+  /* ---- watch ---- */
+  .pd-watch {
+    position: relative;
+    width: var(--w);
+    aspect-ratio: 1;
+  }
+  .pd-strap {
+    position: absolute;
+    left: 22%;
+    right: 22%;
+    height: 34%;
+    background: linear-gradient(90deg, #121218, #1c1c25 50%, #121218);
+    border: 1px solid var(--line);
+  }
+  .pd-strap--t { top: -24%; border-radius: 14px 14px 4px 4px; }
+  .pd-strap--b { bottom: -24%; border-radius: 4px 4px 14px 14px; }
+  .pd-case {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #2a2a33, #0c0c11 60%);
+    border: 1px solid var(--line-strong);
+    box-shadow:
+      0 0 0 5px #0b0b10,
+      0 0 0 6px var(--line-strong),
+      0 30px 60px -20px rgb(0 0 0 / 0.9),
+      0 0 90px -10px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+  .pd-bezel { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .pd-tick { stroke: var(--fg-3); stroke-width: 1; }
+  .pd-tick--h { stroke: var(--fg-2); stroke-width: 1.6; }
+  .pd-ring {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 72 100;
+    transform: rotate(-90deg);
+    transform-origin: 100px 100px;
+    opacity: 0.85;
+  }
+  .pd-face {
+    position: absolute;
+    inset: 13%;
+    border-radius: 50%;
+    background: #050507;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding-top: 6%;
+  }
+  .pd-top { font-size: clamp(0.5rem, 1.6vw, 0.62rem); color: var(--fg-2); display: inline-flex; align-items: center; gap: 6px; }
+  .pd-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pd-blink 1s steps(1) infinite;
+  }
+  .pd.is-paused .pd-live-dot { animation-play-state: paused; }
+  .pd-bpm {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: calc(var(--w) * 0.24);
+    line-height: 1;
+    font-weight: 300;
+    letter-spacing: -0.05em;
+    font-variant-numeric: tabular-nums;
+  }
+  .pd-heart {
+    width: 0.38em;
+    height: 0.38em;
+    fill: var(--accent);
+    transform-origin: center;
+  }
+  .pd-unit { font-size: 0.6rem; color: var(--accent); }
+  .pd-ecg {
+    width: 100%;
+    height: 26%;
+    margin-top: 4px;
+  }
+
+  /* ---- BLE link ---- */
+  .pd-link {
+    position: relative;
+    display: grid;
+    gap: 6px;
+    justify-items: center;
+    min-width: 0;
+  }
+  .pd-wire {
+    position: relative;
+    width: 100%;
+    height: 10px;
+  }
+  .pd-wire::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 1px dashed var(--line-strong);
+  }
+  .pd-pkt {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    opacity: 0;
+  }
+  .pd-lat { color: var(--accent); font-size: 0.72rem; }
+  .pd-proto { color: var(--fg-2); font-size: 0.6rem; text-align: center; line-height: 1.3; }
+  .pd-every { color: var(--fg-3); font-size: 0.58rem; text-align: center; line-height: 1.3; }
+
+  /* ---- phone ---- */
+  .pd-phone {
+    position: relative;
+    width: clamp(78px, 21vw, 112px);
+    aspect-ratio: 9 / 18;
+    border-radius: 18px;
+    border: 1px solid var(--line-strong);
+    background: linear-gradient(170deg, #17171f, #08080c);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 6px;
+  }
+  .pd-notch {
+    position: absolute;
+    top: 7px;
+    width: 26%;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--ink-3);
+  }
+  .pd-phone-lbl { font-size: 0.56rem; color: var(--fg-3); }
+  .pd-recv {
+    font-size: clamp(1.4rem, 6vw, 2.1rem);
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .pd-recv.is-hit { color: var(--accent); }
+  .pd-phone-unit { font-size: 0.5rem; color: var(--fg-2); text-align: center; }
+  .pd-spark { width: 80%; height: 22px; margin-top: 4px; }
+  .pd-spark polyline { fill: none; stroke: var(--accent); stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+  .pd-disc {
+    grid-column: 1 / -1;
+    margin-top: calc(var(--w) * 0.3);
+    font-size: 0.64rem;
+    color: var(--fg-3);
+  }
+
+  @keyframes pd-blink { 50% { opacity: 0.2; } }
+
+  @media (min-width: 640px) {
+    .pd { --w: 240px; gap: 16px; }
+  }
+  @media (min-width: 1024px) {
+    .pd { --w: clamp(220px, min(24vw, 40svh), 360px); gap: clamp(12px, 1.6vw, 28px); }
+    .pd-phone { width: clamp(84px, 7.4vw, 124px); }
+    .pd-disc { text-align: center; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pd-live-dot { animation: none; }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { reducedMotion, visibilityGate, whenReady, isPanelActive, rafLoop } from './runtime';
+
+  function initPulse(root: HTMLElement) {
+    const bpmEl = root.querySelector<HTMLElement>('[data-pd-bpm]')!;
+    const heart = root.querySelector<SVGElement>('[data-pd-heart]')!;
+    const recv = root.querySelector<HTMLElement>('[data-pd-recv]')!;
+    const spark = root.querySelector<SVGPolylineElement>('[data-pd-spark]')!;
+    const wire = root.querySelector<HTMLElement>('[data-pd-wire]')!;
+    const pkts = Array.from(root.querySelectorAll<HTMLElement>('.pd-pkt'));
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-pd-ecg]')!;
+    const ctx = canvas.getContext('2d');
+    const accent = getComputedStyle(root).getPropertyValue('--accent').trim() || '#ff4d6d';
+    const reduce = reducedMotion();
+
+    // ---------- ECG canvas ----------
+    let W = 0;
+    let H = 0;
+    let dpr = 1;
+    let buf = new Float32Array(0);
+    let head = 0; // ring buffer write index
+    const resize = () => {
+      const r = canvas.getBoundingClientRect();
+      if (!r.width) return;
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = Math.round(r.width);
+      H = Math.round(r.height);
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      const old = buf;
+      buf = new Float32Array(W);
+      buf.set(old.subarray(0, Math.min(old.length, W)));
+      head = head % Math.max(1, W);
+      draw();
+    };
+    new ResizeObserver(resize).observe(canvas);
+
+    const g = (x: number, m: number, s: number) => Math.exp(-((x - m) ** 2) / (2 * s * s));
+    // s = seconds since beat onset, interval = beat period
+    const ecg = (s: number, interval: number) =>
+      -0.12 * g(s, 0.02, 0.008) + 1.0 * g(s, 0.045, 0.011) - 0.3 * g(s, 0.075, 0.01) + 0.22 * g(s, 0.3, 0.045) + 0.09 * g(s, interval - 0.12, 0.025);
+
+    const draw = () => {
+      if (!ctx || !W) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      const mid = H * 0.62;
+      const amp = H * 0.5;
+      ctx.lineWidth = 1.4;
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = accent;
+      ctx.shadowColor = accent;
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      for (let x = 0; x < W; x++) {
+        const v = buf[(head + x) % W];
+        const y = mid - v * amp;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      // fade the oldest samples on the left
+      ctx.shadowBlur = 0;
+      ctx.globalCompositeOperation = 'destination-out';
+      const fade = ctx.createLinearGradient(0, 0, W * 0.35, 0);
+      fade.addColorStop(0, 'rgba(0,0,0,1)');
+      fade.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = fade;
+      ctx.fillRect(0, 0, W * 0.35, H);
+      ctx.globalCompositeOperation = 'source-over';
+      // head glow
+      const hv = buf[(head + W - 1) % W];
+      ctx.fillStyle = accent;
+      ctx.beginPath();
+      ctx.arc(W - 2, mid - hv * amp, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    };
+
+    // ---------- simulation ----------
+    let bpm = 72;
+    let sinceBeat = 0.5;
+    let sinceSample = 0;
+    let clock = 0;
+    let colAcc = 0;
+    const SPEED = 46; // px per second
+    const history: number[] = [72, 72, 72, 72, 72, 72, 72, 72];
+    type Flight = { el: HTMLElement; t: number; value: number };
+    const flights: Flight[] = [];
+    let pktIdx = 0;
+
+    const pushSpark = (v: number) => {
+      history.push(v);
+      if (history.length > 12) history.shift();
+      const pts = history.map((h, k) => `${(k / (history.length - 1)) * 60},${(18 - ((h - 64) / 18) * 16).toFixed(1)}`).join(' ');
+      spark.setAttribute('points', pts);
+    };
+
+    const beat = () => {
+      gsap.fromTo(heart, { scale: 1.35 }, { scale: 1, duration: 0.45, ease: 'power3.out', transformOrigin: '50% 50%' });
+      if (isPanelActive(root) && !reduce) {
+        window.dispatchEvent(new CustomEvent('gl:pulse', { detail: { strength: 0.25 } }));
+      }
+    };
+
+    const sample = () => {
+      // gentle random walk inside 68–78
+      bpm = Math.round(gsap.utils.clamp(68, 78, bpm + (Math.random() * 4 - 2) + (73 - bpm) * 0.15));
+      bpmEl.textContent = String(bpm);
+      // launch a BLE packet carrying this value; it lands ~2 s later
+      const el = pkts[pktIdx++ % pkts.length];
+      flights.push({ el, t: 0, value: bpm });
+    };
+
+    const land = (v: number) => {
+      recv.textContent = String(v);
+      recv.classList.add('is-hit');
+      window.setTimeout(() => recv.classList.remove('is-hit'), 260);
+      pushSpark(v);
+    };
+
+    const step = (dt: number) => {
+      clock += dt;
+      const interval = 60 / bpm;
+      sinceBeat += dt;
+      if (sinceBeat >= interval) {
+        sinceBeat -= interval;
+        beat();
+      }
+      sinceSample += dt;
+      if (sinceSample >= 1) {
+        sinceSample -= 1;
+        sample();
+      }
+      // packets
+      const ww = wire.clientWidth;
+      for (let k = flights.length - 1; k >= 0; k--) {
+        const f = flights[k];
+        f.t += dt / 2; // 2 s trip
+        if (f.t >= 1) {
+          f.el.style.opacity = '0';
+          land(f.value);
+          flights.splice(k, 1);
+        } else {
+          const e = f.t;
+          f.el.style.opacity = String(Math.min(1, e * 6, (1 - e) * 6));
+          f.el.style.transform = `translate3d(${(e * ww).toFixed(1)}px,0,0)`;
+        }
+      }
+      // ECG columns
+      if (W) {
+        colAcc += dt * SPEED;
+        let n = Math.floor(colAcc);
+        colAcc -= n;
+        let s = sinceBeat - n / SPEED;
+        while (n-- > 0) {
+          s += 1 / SPEED;
+          const ss = s < 0 ? s + interval : s;
+          buf[head] = ecg(ss, interval) + (Math.random() - 0.5) * 0.015;
+          head = (head + 1) % W;
+        }
+        draw();
+      }
+    };
+
+    const loop = rafLoop((dt) => step(dt));
+
+    if (reduce) {
+      // static final state: prefill a calm trace once
+      root.classList.add('is-paused');
+      requestAnimationFrame(() => {
+        resize();
+        if (!W) return;
+        const interval = 60 / 72;
+        for (let x = 0; x < W; x++) {
+          const s = (x / SPEED) % interval;
+          buf[x] = ecg(s, interval);
+        }
+        head = 0;
+        draw();
+      });
+      return;
+    }
+
+    whenReady(() =>
+      visibilityGate(root, (on) => {
+        root.classList.toggle('is-paused', !on);
+        if (on) {
+          resize();
+          loop.start();
+        } else loop.stop();
+      }),
+    );
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-demo="heart"]').forEach(initPulse);
+</script>

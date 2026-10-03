@@ -1,0 +1,53 @@
+/* DESIGN TOKENS — owned by the lead. Agents: use these vars, don't redefine them.
+   Add component styles in your own component <style> blocks. */
+:root {
+  /* palette: deep ink + one electric signal color */
+  --ink-0: #050507;      /* page background */
+  --ink-1: #0b0b10;      /* raised surface */
+  --ink-2: #13131b;      /* card */
+  --ink-3: #1d1d28;      /* hairline-strong */
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --fg: #f2f0ea;         /* primary text (warm white) */
+  --fg-2: #a9a7a0;       /* secondary text */
+  --fg-3: #6b6a66;       /* muted / meta */
+  --signal: #d7ff3a;     /* THE accent: electric lime */
+  --signal-ink: #0a0a00; /* text on signal */
+  --violet: #8b7bff;     /* secondary accent, use sparingly */
+  --cyan: #7cf7ff;
+
+  /* type */
+  --font-sans: 'Inter Tight', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Instrument Serif', 'Times New Roman', serif; /* italic accents only */
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* fluid type scale */
+  --fs-mega: clamp(4.2rem, 17vw, 19rem);   /* hero name */
+  --fs-h1: clamp(3rem, 9vw, 9.5rem);
+  --fs-h2: clamp(2.2rem, 5.6vw, 5.5rem);
+  --fs-h3: clamp(1.4rem, 2.4vw, 2.2rem);
+  --fs-lead: clamp(1.15rem, 1.6vw, 1.6rem);
+  --fs-body: clamp(1rem, 1.05vw, 1.125rem);
+  --fs-meta: 0.78rem;                      /* mono labels, uppercase */
+
+  /* spacing */
+  --gutter: clamp(16px, 4vw, 64px);
+  --section-y: clamp(96px, 16vh, 200px);
+  --maxw: 1600px;
+  --radius: 18px;
+  --radius-lg: 28px;
+
+  /* motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+  --dur: 0.9s;
+
+  /* layering */
+  --z-gl: 0;
+  --z-content: 2;
+  --z-nav: 50;
+  --z-cursor: 90;
+  --z-loader: 100;
+
+  color-scheme: dark;
+}
